@@ -1,0 +1,9 @@
+loging brings you to home page
+
+App.jsx is not Home page (IMPO)
+
+Navbar:
+Spark (default home page)
+Create Spark (create posts) (not a page but a pop up)
+mesages
+saved
