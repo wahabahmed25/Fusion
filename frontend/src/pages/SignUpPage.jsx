@@ -1,5 +1,5 @@
 import InputField from "../components/InputField";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import imageBG from "../images/signup-BG.jpg";
 const SignUpPage = () => {
@@ -9,39 +9,49 @@ const SignUpPage = () => {
     password: "",
     username: "",
   });
+  const [imageLoaded, setImageLoaded] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-      e.preventDefault();
-      try{
-          const response = await fetch("http://localhost:8081/signup", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ ...formValue }), //send form values as JSON
-          });
+  useEffect(() => {
+    const img = new Image();
+    img.src = imageBG;
+    img.onload = () => setImageLoaded(true);
+  });
 
-          if(response.ok){
-              console.log("User Registered successfully");
-              navigate("/login"); //redirect to login page after success
-          } else{
-              console.error("Failed to register");
-          }
-      } catch (error){
-          console.error(error);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch("http://localhost:8081/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...formValue }), //send form values as JSON
+      });
+
+      if (response.ok) {
+        console.log("User Registered successfully");
+        navigate("/login"); //redirect to login page after success
+      } else {
+        console.error("Failed to register");
       }
-  }
+    } catch (error) {
+      console.error(error);
+    }
+  };
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormValue((prevValues) => ({ ...prevValues, [name]: value }));
   };
   return (
-    
-    <div className="relative overflow-hidden min-h-screen flex">
-      <img 
-        src={imageBG}
-        alt="image"
-        className="absolute top-0 left-0 w-full h-full object-cover z-0"
-        />
+    <div
+      className={`relative overflow-hidden min-h-screen flex transition-opacity duration-300 ${
+        imageLoaded ? "opacity-100" : "opacity-0"
+      }`}
+      style={{
+        backgroundImage: `url(${imageBG})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
       <div className="w-1/2 min-h-screen"></div>
 
       {/* Form container */}
@@ -57,7 +67,10 @@ const SignUpPage = () => {
             fill="black"
           />
         </svg> */}
-        <form onSubmit = {handleSubmit} className="relative z-10 w-[400px] p-5 rounded-md shadow-lg text-white">
+        <form
+          onSubmit={handleSubmit}
+          className="relative z-10 w-[400px] p-5 rounded-md shadow-lg text-white"
+        >
           <div>
             <h2 className="text-3xl font-bold text-center text-white mb-6">
               Sign Up
@@ -97,10 +110,8 @@ const SignUpPage = () => {
               />
             </div>
             <button
-            
               type="submit"
               className="w-full py-2 bg-[#D3145A] text-white rounded-md hover:bg-[#7E155A] transition duration-200"
-              
             >
               Sign Up
             </button>

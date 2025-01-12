@@ -2,8 +2,21 @@ loging brings you to home page
 
 App.jsx is not Home page (IMPO)
 
+
 Navbar:
 Spark (default home page)
 Create Spark (create posts) (not a page but a pop up)
 mesages
-saved
+save
+
+
+Api:
+fetches posts (which has likes, comments);
+
+for suggested: fetch top 8 recent user profiles
+
+
+when logged in:
+store that data as a json
+home page profile:
+used the stored data to show profile, name and username
