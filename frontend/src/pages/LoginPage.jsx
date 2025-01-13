@@ -2,27 +2,32 @@ import InputField from "../components/InputField";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-
+import { validateForm, validateField } from "../components/LoginValidation";
 const LoginPage = () => {
   const [loginInfo, setLoginInfo] = useState({
     username: "",
     password: "",
   });
-
+  const [error, setError] = useState({});
+  console.log(error)
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setLoginInfo((prevValue) => ({ ...prevValue, [name]: value }));
+    const fieldError = validateField(name, value);
+    setError((prev) => ({...prev, [name]: fieldError}));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const { username, password } = loginInfo;
+    const formErrors = validateForm(loginInfo)
+    setError(formErrors);
+    
+    // const { username, password } = loginInfo;
 
-    if(username === "" || password === ""){
-        alert("Fill in All fields");
-        return;
+    if(Object.keys(formErrors).length > 0){
+      return;
     }
 
     fetch("http://localhost:8081/login", {
@@ -33,6 +38,8 @@ const LoginPage = () => {
       .then((response) => response.json())
       .then((data)=> {
         if(data.success){
+            console.log("succesfully logged in, token: ", data.token);
+            localStorage.setItem("authToken", data.token);
             navigate("/home");
         }
         else{
@@ -40,7 +47,7 @@ const LoginPage = () => {
         }
       })
       .catch((error) => {
-        console.log(error);
+        console.error(error);
         alert("something went wrong");
       })
 
@@ -66,6 +73,7 @@ const LoginPage = () => {
               value={loginInfo.username}
               placeholder="Username"
               onChange={handleChange}
+              error = {error.username}
               required
               className="border-2 border-gray-300 rounded-md p-3 w-full focus:outline-none focus:ring-2 focus:ring-[#D3145A] focus:border-[#D3145A]"
             />
@@ -76,6 +84,7 @@ const LoginPage = () => {
               value={loginInfo.password}
               placeholder="Password"
               onChange={handleChange}
+              error = {error.password}
               className="border-2 border-gray-300 rounded-md p-3 w-full focus:outline-none focus:ring-2 focus:ring-[#D3145A] focus:border-[#D3145A]"
               required
             />

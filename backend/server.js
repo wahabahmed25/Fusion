@@ -2,6 +2,8 @@ const express = require('express');
 const mysql = require('mysql2');
 require('dotenv').config();
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = process.env.JWT_SECRET_KEY;
 
 const app = express();
 
@@ -10,6 +12,7 @@ app.use(express.json());
 app.use(cors({
     origin: 'http://localhost:5173', // Frontend URL
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'], // Allow Authorization header
     credentials: true
 }));
 
@@ -51,24 +54,25 @@ app.get('/users', (req, res) => {
 
 const getUserById = (userId) => {
     return new Promise((resolve, reject) => {
-      const query = `
-        SELECT u.* 
-        FROM users u
-        JOIN user_profiles up ON u.id = up.user_id
-        WHERE up.user_id = ?;
-      `;
-      database.execute(query, [userId], (err, results) => {
-        if (err) {
-          return reject(err); // Reject with error if query fails
-        }
-        if (results.length > 0) {
-          resolve(results[0]); // Return the first user (assuming user_id is unique)
-        } else {
-          reject('User not found');
-        }
-      });
+        const query = `
+            SELECT u.id AS user_id, u.username, u.full_name, up.profile_pic, up.bio, up.website_url
+            FROM users u
+            LEFT JOIN user_profiles up ON u.id = up.user_id
+            WHERE u.id = ?;
+        `;
+        database.query(query, [userId], (err, results) => {
+            if (err) {
+                return reject(err);
+            }
+            if (results.length > 0) {
+                resolve(results[0]);
+            } else {
+                reject('User not found');
+            }
+        });
     });
 };
+
   
 
 
@@ -87,17 +91,40 @@ const getUserById = (userId) => {
   
   
 
-app.get('/user_profiles', (req, res) => {
-    const sql = "SELECT * FROM user_profiles";
-    database.query(sql, (err, data) => {
+
+const authenticateToken = (req, res, next) => {
+    //fetches the header(when present) formatted in Bearer <token>
+    const authHeader = req.headers['authorization'];
+    //extracts the token
+    const token = authHeader && authHeader.split(' ')[1];
+    //if no token return undef
+    if (!token) return res.status(401).json({ message: 'Access token missing or invalid' });
+    //varifies token, and if valid Express proceeds to next route handler
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) return res.status(403).json({ message: 'Invalid token' });
+        req.user = user; // Add the user object to the request
+        console.log("Decoded token payload:", user); // Log the decoded payload
+        next(); //need, wihtout it request would hand and never reach its destination
+    });
+
+}
+
+app.get('/user_profiles',authenticateToken,  (req, res) => {
+    const userId = req.user.id
+    const sql = "SELECT * FROM user_profiles WHERE user_id = ?";
+    database.query(sql, [userId], (err, data) => {
         if (err) {
             console.error("Error fetching data:", err);
             return res.json(err);
         }
+        if(data.length === 0){
+            return res.status(404).json({ message: "Profile not found" });
+        }
         console.log("Fetched data:", data);  // Log the data to see if it's being fetched
-        return res.json(data);
+        return res.json(data[0]);
     });
 });
+
 
 
 
@@ -159,7 +186,11 @@ app.post('/login', (req, res) => {
             return res.status(500).json({ success: false, message: "Server error" });
         }
         if(result.length > 0){
-            return res.json({ success: true, message: "Login Successful" });
+            const user = result[0];
+            //generate token
+            const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '2h' });
+
+            return res.json({ success: true, token, message: "Login Successful" });
         }
         else{
             return res.status(401).json({ success: false, message: "Invalid username or password" });
