@@ -2,6 +2,8 @@ import InputField from "../components/InputField";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import imageBG from "../images/signup-BG.jpg";
+import { validateForm, validateField } from "../components/SigninValidation";
+
 const SignUpPage = () => {
   const [formValue, setFormValue] = useState({
     fullName: "",
@@ -9,6 +11,7 @@ const SignUpPage = () => {
     password: "",
     username: "",
   });
+  const [error, setError] = useState({})
   const [imageLoaded, setImageLoaded] = useState(false);
   const navigate = useNavigate();
 
@@ -20,11 +23,19 @@ const SignUpPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const formError = validateForm(formValue);
+    setError(formError);
+
+    if (Object.keys(formError).length > 0) {
+      console.error("Validation errors:", formError);
+      return; // Stop form submission if there are errors
+    }
+
     try {
       const response = await fetch("http://localhost:8081/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formValue }), //send form values as JSON
+        body: JSON.stringify(formValue), //send form values as JSON
       });
 
       if (response.ok) {
@@ -40,6 +51,9 @@ const SignUpPage = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormValue((prevValues) => ({ ...prevValues, [name]: value }));
+    const fieldError = validateField(name, value);
+    setError((prev) => ({...prev, [name]: fieldError}));
+
   };
   return (
     <div
@@ -55,7 +69,7 @@ const SignUpPage = () => {
       <div className="w-1/2 min-h-screen"></div>
 
       {/* Form container */}
-      <div className="relative w-1/2 bg-black flex justify-center items-center">
+      <div className="relative w-1/2 bg-gray-800 flex justify-center items-center">
         {/* <svg
           className="absolute top-0 left-0 h-full w-full z-0 transform scale-x-[-1]"
           xmlns="http://www.w3.org/2000/svg"
@@ -82,6 +96,7 @@ const SignUpPage = () => {
                 name="fullName"
                 value={formValue.fullName}
                 placeholder=""
+                error = {error.fullName}
                 onChange={handleChange}
               />
               <InputField
@@ -90,6 +105,7 @@ const SignUpPage = () => {
                 name="username"
                 value={formValue.username}
                 placeholder=""
+                error = {error.username}
                 onChange={handleChange}
               />
               <InputField
@@ -98,6 +114,7 @@ const SignUpPage = () => {
                 name="email"
                 value={formValue.email}
                 placeholder=""
+                error = {error.email}
                 onChange={handleChange}
               />
               <InputField
@@ -105,6 +122,7 @@ const SignUpPage = () => {
                 type="password"
                 name="password"
                 value={formValue.password}
+                error = {error.password}
                 placeholder=""
                 onChange={handleChange}
               />

@@ -1,15 +1,15 @@
-const validateField = (name, value) => {
+export const validateField = (name, value) => {
 //   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const passwordPattern = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9]{8,}$/;
+  // const passwordPattern = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9]{8,}$/;
 
   switch (name) {
-    // case "username":
-    //   if (!value) return "Username should not be empty";
+    case "username":
+      if (!value) return "Username should not be empty";
     //   if (!emailPattern.test(value)) return "Invalid email format";
-    //   break;
+      break;
     case "password":
       if (!value) return "Password should not be empty";
-      if (!passwordPattern.test(value)) return "Password must be at least 8 characters, include a digit, a lowercase, and an uppercase letter";
+      // if (!passwordPattern.test(value)) return "Incorrect Password, please try again";
       break;
     default:
       break;
@@ -19,7 +19,7 @@ const validateField = (name, value) => {
 
 
 //validates by checking all fields at once when subbitting
-const validateForm = (values) => {
+export const validateForm = (values) => {
   const errors = {};
   for (const [field, value] of Object.entries(values)) {
     const error = validateField(field, value);

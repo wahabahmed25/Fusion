@@ -7,6 +7,7 @@ const InputField = ({
   type,
   label,
   name,
+  error,
   className = "",
 }) => {
   return (
@@ -26,8 +27,17 @@ const InputField = ({
         name={name}
         onChange={onChange}
         placeholder={placeholder}
-        className={`w-full border border-white rounded-full p-4 focus:outline-none focus:ring-2 focus:ring-[#880E4F] focus:border-transparent bg-transparent ${className}`}
+        className={`w-full border rounded-full p-4 focus:outline-none focus:ring-2 ${
+          error
+            ? "border-red-500 focus:ring-red-500"
+            : "border-white focus:ring-[#880E4F]"
+        } bg-transparent ${className}`}
       />
+      {error && (
+        <p className="mt-2 text-sm text-red-500" data-testid={`${name}-error`}>
+          {error}
+        </p>
+      )}
     </div>
   );
 };
@@ -39,6 +49,7 @@ InputField.propTypes = {
   type: PropTypes.string,
   name: PropTypes.string.isRequired,
   label: PropTypes.string,
+  error: PropTypes.string, // Added error as a string
   className: PropTypes.string,
 };
 

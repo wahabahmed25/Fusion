@@ -56,17 +56,23 @@ const PersonalProfile = () => {
   }, []);
   return (
     <div>
-      <div className="text-white">
-        <h1 className="text-white">Your profile</h1>
+      <div className="text-white p-2 px-6 rounded-lg shadow-lg w-42 text-center flex">
         <img
           src={yourProfile.profile_pic}
           alt="empty"
-          className="w-32 h-32 rounded-full object-cover"
+          className="w-24 h-24 rounded-full object-cover mr-4"
         />
+        <div className="flex flex-col justify-center">
+          <p className="text-white text-xl font-semibold mb-2 whitespace-nowrap">{yourProfile.name}</p>
 
-        <p>{yourProfile.username}</p>
-        <p>{yourProfile.name}</p>
+          <p className="text-gray-400 text-sm whitespace-nowrap">{yourProfile.username}</p>
+
+        </div>
+        
+        
+        
       </div>
+
     </div>
   );
 };

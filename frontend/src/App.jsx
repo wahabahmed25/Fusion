@@ -8,8 +8,9 @@ const App = () => {
 
   return (
     <div className="">
-        {/* <Link to="/signup" className="bg-red-600 p-2 border">sign up page</Link>
-        <Link to="/" className="bg-red-600 border p-2">home page</Link>
+        {/* <Link to="/home" className="bg-red-600 p-2 border">Home page</Link>
+        <Link to="/signup" className="bg-red-600 p-2 border">sign up page</Link>
+        <Link to="/" className="bg-red-600 border p-2">App.jsx page</Link>
         <Link to="/login" className="bg-red-600 border p-2">login page</Link> */}
 
       

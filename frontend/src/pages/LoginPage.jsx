@@ -9,54 +9,53 @@ const LoginPage = () => {
     password: "",
   });
   const [error, setError] = useState({});
-  console.log(error)
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setLoginInfo((prevValue) => ({ ...prevValue, [name]: value }));
     const fieldError = validateField(name, value);
-    setError((prev) => ({...prev, [name]: fieldError}));
+    setError((prev) => ({ ...prev, [name]: fieldError }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const formErrors = validateForm(loginInfo)
+    const formErrors = validateForm(loginInfo);
     setError(formErrors);
-    
-    // const { username, password } = loginInfo;
 
-    if(Object.keys(formErrors).length > 0){
+    // const { username, password } = loginInfo;
+    //if form erros than do not proceed
+    if (Object.keys(formErrors).length > 0) {
       return;
     }
 
     fetch("http://localhost:8081/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(loginInfo), // Send login data as JSON
-      })
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(loginInfo), // Send login data as JSON
+    })
       .then((response) => response.json())
-      .then((data)=> {
-        if(data.success){
-            console.log("succesfully logged in, token: ", data.token);
-            localStorage.setItem("authToken", data.token);
-            navigate("/home");
-        }
-        else{
-            alert(data.message || "Invalid Credentials")
+      .then((data) => {
+        if (data.success) {
+          console.log("succesfully logged in, token: ", data.token);
+
+          localStorage.setItem("authToken", data.token);
+          navigate("/home");
+        } else {
+          setError((prev) => ({
+            ...prev,
+            general: data.message || "Invalid credentials, please try again"
+          }))
         }
       })
       .catch((error) => {
         console.error(error);
-        alert("something went wrong");
-      })
-
-
-
-
-  }
-
-  
+        setError((prev) => ({
+          ...prev,
+          general: "Something went wrong, try again",
+        }))
+      });
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -66,6 +65,7 @@ const LoginPage = () => {
         </h2>
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
+            
             <InputField
               label="Username"
               type="text"
@@ -73,7 +73,7 @@ const LoginPage = () => {
               value={loginInfo.username}
               placeholder="Username"
               onChange={handleChange}
-              error = {error.username}
+              error={error.username}
               required
               className="border-2 border-gray-300 rounded-md p-3 w-full focus:outline-none focus:ring-2 focus:ring-[#D3145A] focus:border-[#D3145A]"
             />
@@ -84,7 +84,7 @@ const LoginPage = () => {
               value={loginInfo.password}
               placeholder="Password"
               onChange={handleChange}
-              error = {error.password}
+              error={error.password}
               className="border-2 border-gray-300 rounded-md p-3 w-full focus:outline-none focus:ring-2 focus:ring-[#D3145A] focus:border-[#D3145A]"
               required
             />
@@ -96,6 +96,9 @@ const LoginPage = () => {
             >
               Log In
             </button>
+            {error.general && (
+              <p className="text-red-500 text-center mb-4">{error.general}</p>
+            )}
           </div>
           <div className="mt-4 text-center">
             <p className="text-sm text-gray-500">
