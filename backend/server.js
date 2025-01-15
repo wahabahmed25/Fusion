@@ -126,6 +126,24 @@ app.get('/user_profiles',authenticateToken,  (req, res) => {
 });
 
 
+// app.get('/user_profiles', (req, res) => {
+//     const userId = req.user.id
+//     const sql = "SELECT * FROM user_profiles WHERE user_id = ?";
+//     database.query(sql, [userId], (err, data) => {
+//         if (err) {
+//             console.error("Error fetching data:", err);
+//             return res.json(err);
+//         }
+//         if(data.length === 0){
+//             return res.status(404).json({ message: "Profile not found" });
+//         }
+//         console.log("Fetched data:", data);  // Log the data to see if it's being fetched
+//         return res.json(data[0]);
+//     });
+// });
+
+
+
 
 
 

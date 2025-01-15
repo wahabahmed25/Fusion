@@ -20,7 +20,7 @@ export const validateField = (name, value) => {
       if (!value) return "Username should not be empty";
       if (!usernamePattern.test(value)) return "Username can only contain letters, numbers, and these symbols: -.$&?!_%~|<>";
       if (value.length < 3) return "Username must be at least 3 characters long";
-      if (value.length > 20) return "Username must not exceed 20 characters";
+      if (value.length > 21) return "Username must not exceed 20 characters";
       break;
 
     case "password":
@@ -43,4 +43,10 @@ export const validateForm = (values) => {
     if (error) errors[field] = error;
   }
   return errors;
+};
+
+//extract first name from full name
+export const extractFirstName = (fullName) => {
+  if (!fullName) return null;
+  return fullName.trim().split(" ")[0];
 };

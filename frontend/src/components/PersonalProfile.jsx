@@ -1,6 +1,6 @@
 import defaultProfile from "../icons/default-profile.svg"; // or adjust the relative path if needed
 import { useEffect, useState } from "react";
-
+import { extractFirstName } from "./SigninValidation";
 const PersonalProfile = () => {
   const [yourProfile, setYourProfile] = useState({
     profile_pic: "",
@@ -27,7 +27,7 @@ const PersonalProfile = () => {
     })
       .then((response) => {
         if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
+          throw new Error(`HTTP error Status: ${response.status}`);
         }
         return response.json();
       })
@@ -46,7 +46,7 @@ const PersonalProfile = () => {
               setYourProfile({
                 profile_pic: profileData.profile_pic || defaultProfile,
                 username: userData.username || "No username",
-                name: userData.full_name || "No name",
+                name: extractFirstName(userData.full_name) || "No name",
               });
             });
         }
@@ -63,9 +63,9 @@ const PersonalProfile = () => {
           className="w-24 h-24 rounded-full object-cover mr-4"
         />
         <div className="flex flex-col justify-center">
-          <p className="text-white text-xl font-semibold mb-2 whitespace-nowrap">{yourProfile.name}</p>
+          <p className="text-white text-xl font-semibold mb-2 whitespace-nowrap uppercase">{yourProfile.name}</p>
 
-          <p className="text-gray-400 text-sm whitespace-nowrap">{yourProfile.username}</p>
+          <p className="text-gray-400 text-sm whitespace-nowrap lowercase">{yourProfile.username}</p>
 
         </div>
         

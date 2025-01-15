@@ -1,6 +1,12 @@
 import { Link } from "react-router-dom";
 import YourProfile from "../components/PersonalProfile"
+import CreatePost from "./CreatePost";
+import { useState } from "react";
 const Navbar = () => {
+  const [showModal, setShowModal] = useState(false);
+  const toggleModal = () => {
+    setShowModal((prev => !prev));
+  }
   return (
     <div className="bg-gray-700 text-white shadow-md fixed h-screen w-auto z-50 flex flex-col">
       <nav className="flex flex-col items-start px-6 py-8 space-y-6">
@@ -24,10 +30,12 @@ const Navbar = () => {
           {/*come back to this (creating posts) */}
           <button
             className="text-xl p-2 w-40  rounded-lg hover:bg-pink-500 transition duration-200"
-            onClick={() => alert("Open Create Spark modal")}
+            onClick={toggleModal}
           >
             Create Spark
           </button>
+          {showModal && <CreatePost showModal={showModal} toggleModal={toggleModal} />}
+
           <Link
             to="/messages"
             className="text-xl px-6 py-2 w-40 rounded-lg hover:bg-pink-500 transition duration-200"

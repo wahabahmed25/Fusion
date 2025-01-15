@@ -20,3 +20,9 @@ when logged in:
 store that data as a json
 home page profile:
 used the stored data to show profile, name and username
+
+
+
+UserProfile.jsx
+
+api --> fetches 8 most recent users created as "suggested users"
