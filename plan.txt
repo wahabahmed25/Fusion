@@ -10,6 +10,7 @@ mesages
 save
 
 
+
 Api:
 fetches posts (which has likes, comments);
 
@@ -26,3 +27,16 @@ used the stored data to show profile, name and username
 UserProfile.jsx
 
 api --> fetches 8 most recent users created as "suggested users"
+
+
+post table:
+id, user_id, description, media_url, created_at
+displaying the post we made:
+store post in post table when clicked publish
+
+fetch using post requesnt, in backend side insert data into post table
+
+with every post:
+DisplayPostCard.jsx component --> caption, post, like comment and save (optional share)
+to display:
+in Media.jsx use api fetch the post and display it from their
