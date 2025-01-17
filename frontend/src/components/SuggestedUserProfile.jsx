@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { extractFirstName } from "./SigninValidation";
 import defaultProfile from "../icons/default-profile.svg";
 
-const UserProfile = () => {
+const SuggestedUserProfile = () => {
   const [userProfiles, setUserProfiles] = useState([]);
   const [error, setError] = useState(null);
 
@@ -76,7 +76,7 @@ const UserProfile = () => {
   }
 
   return (
-    <div className="flex justify-end p-4">
+    <div className="flex justify-end p-4 fixed w-full">
       <div className="text-gray-800 w-1/4 bg-gray-100 p-4 rounded-lg shadow-md">
         <h2 className="text-lg font-semibold mb-4">Suggested Users</h2>
         <ul>
@@ -105,4 +105,4 @@ const UserProfile = () => {
   );
 };
 
-export default UserProfile;
+export default SuggestedUserProfile;

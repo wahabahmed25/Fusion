@@ -40,3 +40,22 @@ with every post:
 DisplayPostCard.jsx component --> caption, post, like comment and save (optional share)
 to display:
 in Media.jsx use api fetch the post and display it from their
+
+
+showing the media:
+
+PostCard.jsx:
+must be able to delete as well
+description, image --> like comment, save (as props);
+
+
+Media.jsx:
+fetching data thats in posts table,
+
+like table:
+id, user_id, post_id
+
+getting the posters profile : name, time created, and username
+
+fetch posts user_id with get request token:
+then fetch users with the user_id from post to get the users profile
