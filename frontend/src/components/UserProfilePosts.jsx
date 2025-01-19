@@ -1,13 +1,16 @@
 import { useState, useEffect } from "react";
 
-const UserProfilePosts = () => {
+import PropTypes from "prop-types";
+
+const UserProfilePosts = ({ onPostsFetched }) => {
   const [posts, setPosts] = useState([]);
   const [error, setError] = useState(null);
+    console.log(posts);
   useEffect(() => {
     const fetchUserPosts = async () => {
       const token = localStorage.getItem("authToken");
       if (!token) {
-        console.error("error authorizing user");
+        console.error("Error authorizing user");
         setError("Authorization error. Please log in.");
         return;
       }
@@ -19,31 +22,29 @@ const UserProfilePosts = () => {
           },
         });
         if (!response.ok) {
-          console.error("error fetching posts");
+          console.error("Error fetching posts");
           setError("Failed to fetch posts.");
           return;
-        } 
+        }
         const postsData = await response.json();
-        setPosts(postsData)
-        
-            
+        setPosts(postsData);
+        if (onPostsFetched) {
+          onPostsFetched(postsData); // Share data with parent
+        }
       } catch (error) {
-        console.error("error occured",error);
+        console.error("Error occurred", error);
         setError("Something went wrong. Please try again later.");
-
       }
     };
     fetchUserPosts();
   }, []);
 
-
-  if (error) return <p>{error}</p>; // Show an error message
+  if (error) return <p>{error}</p>;
 
   return (
     <div className="post-container">
-      {posts.map((post) => (
+      {/* {posts.map((post) => (
         <div key={post.post_id} className="post">
-          {/* User Profile Section */}
           <div className="user-profile">
             <img
               src={post.user.profile_pic}
@@ -55,8 +56,6 @@ const UserProfilePosts = () => {
               <p className="name">{post.user.name}</p>
             </div>
           </div>
-
-          {/* Post Content */}
           <div className="post-content">
             <p className="description">{post.description}</p>
             {post.media_url && (
@@ -68,9 +67,13 @@ const UserProfilePosts = () => {
             )}
           </div>
         </div>
-      ))}
+      ))} */}
     </div>
   );
 };
+
+UserProfilePosts.propTypes = {
+    onPostsFetched: PropTypes.func.isRequired
+}
 
 export default UserProfilePosts;

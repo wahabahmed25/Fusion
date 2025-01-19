@@ -33,19 +33,19 @@ const PostCard = ({
         <div className="flex items-center mb-4">
           <img
             src={user.profile_pic || defaultProfile} // Default profile pic if not provided
-            alt={`${user.username}'s profile`}
+            alt="null"
             className="w-10 h-10 rounded-full mr-3"
           />
           <div>
-            <p className="text-sm font-bold">@{user.username || "Unknown"}</p>
-            <p className="text-xs text-gray-600">{user.name || "Anonymous"}</p>
+            <p className="text-sm font-bold lowercase">@{user.username || "Unknown"}</p>
+            <p className="text-xs text-gray-600 uppercase">{user.name || "Anonymous"}</p>
           </div>
         </div>
       )}
 
       {/* Post Description */}
       <div className="mt-4">
-        <h3 className="text-lg font-semibold text-gray-800">{description}</h3>
+        <h3 className="text-md px-1 pb-2 text-gray-800">{description}</h3>
       </div>
 
       {/* Post Image */}

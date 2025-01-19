@@ -78,26 +78,26 @@ app.get('/users', (req, res) => {
 });
 
 
-// const getUserById = (userId) => {
-//     return new Promise((resolve, reject) => {
-//         const query = `
-//             SELECT u.id AS user_id, u.username, u.full_name, up.profile_pic, up.bio, up.website_url
-//             FROM users u
-//             LEFT JOIN user_profiles up ON u.id = up.user_id
-//             WHERE u.id = ?;
-//         `;
-//         database.query(query, [userId], (err, results) => {
-//             if (err) {
-//                 return reject(err);
-//             }
-//             if (results.length > 0) {
-//                 resolve(results[0]);
-//             } else {
-//                 reject('User not found');
-//             }
-//         });
-//     });
-// };
+const getUserById = (userId) => {
+    return new Promise((resolve, reject) => {
+        const query = `
+            SELECT u.id AS user_id, u.username, u.full_name, up.profile_pic, up.bio, up.website_url
+            FROM users u
+            LEFT JOIN user_profiles up ON u.id = up.user_id
+            WHERE u.id = ?;
+        `;
+        database.query(query, [userId], (err, results) => {
+            if (err) {
+                return reject(err);
+            }
+            if (results.length > 0) {
+                resolve(results[0]);
+            } else {
+                reject('User not found');
+            }
+        });
+    });
+};
 
   
 //fetch multiple users by id
@@ -108,7 +108,7 @@ const getUserProfiles = (userIds) => {
             SELECT u.id AS user_id, u.username, u.full_name, up.profile_pic, up.bio, up.website_url
             FROM users u
             LEFT JOIN user_profiles up ON u.id = up.user_id
-            WHERE u.id IN (?);
+            WHERE u.id = (?);
         `;
 
         // Passing the array of user IDs directly to the query
@@ -177,7 +177,7 @@ app.get('/user_profiles',authenticateToken,  (req, res) => {
 
 
 //personal dash board
-app.get('/user-posts', authenticateToken, (req, res) => {
+app.get('/personal-posts', authenticateToken, (req, res) => {
     const userId = req.user.id;
     //joins posts with user profile and user info
     const userPostsQuery = `
@@ -230,27 +230,60 @@ app.get('/user-posts', authenticateToken, (req, res) => {
 //public feed:
 
 app.get('/user-posts', authenticateToken, (req, res) => {
-    // const userId = req.user.id;
-    const sql = "SELECT * FROM posts";
-    database.query(sql, (err, data) => {
-        if(err){
-            console.error("error fetching data", err);
-            return res.json(err);
+    // Updated query: Remove the WHERE clause to fetch posts from all users
+    const allPostsQuery = `
+        SELECT 
+            posts.id AS post_id, 
+            posts.media_url, 
+            posts.description, 
+            posts.created_at, 
+            users.id AS user_id, 
+            users.username, 
+            users.full_name, 
+            user_profiles.profile_pic 
+        FROM 
+            posts
+        INNER JOIN 
+            users ON posts.user_id = users.id
+        INNER JOIN 
+            user_profiles ON posts.user_id = user_profiles.user_id
+        ORDER BY 
+            posts.created_at DESC
+    `;
+
+    database.query(allPostsQuery, (err, results) => {
+        if (err) {
+            console.error("Error fetching posts: ", err);
+            return res.status(500).json({ error: "Failed to fetch posts" });
         }
-        console.log("fetched post data: ", data);
-        return res.json(data);
-    })
-})
+
+        const formattedPosts = results.map(post => ({
+            post_id: post.post_id,
+            media_url: post.media_url,
+            description: post.description,
+            created_at: post.created_at,
+            user: {
+                id: post.user_id,
+                username: post.username,
+                name: post.full_name,
+                profile_pic: post.profile_pic,
+            },
+        }));
+
+        return res.status(200).json(formattedPosts);
+    });
+});
+
 
 app.post("/user_profiles", async (req, res) => {
-    const { user_ids } = req.body;
-    console.log("Received user_ids:", user_ids);  // Log user IDs to see if they are correct
+    const userId = req.user.id;
+    console.log("Received user_ids:", userId);  // Log user IDs to see if they are correct
     try {
-      if (!user_ids || !Array.isArray(user_ids) || user_ids.length === 0) {
+      if (!userId || !Array.isArray(userId) || userId.length === 0) {
         return res.status(400).json({ error: "No user IDs provided." });
       }
   
-      const profiles = await getUserProfiles(user_ids); // Fetch user profiles based on the IDs
+      const profiles = await getUserProfiles(userId); // Fetch user profiles based on the IDs
       console.log("User profiles fetched:", profiles); // Log the fetched profiles
       res.status(200).json(profiles);
     } catch (error) {
@@ -262,7 +295,7 @@ app.post("/user_profiles", async (req, res) => {
 
 app.post('/posts', authenticateToken, upload.single("image"), (req, res) => {
     const userId = req.user.id;
-    console.log("Received user_ids:", user_ids);  // Log user IDs to see if they are correct
+    console.log("Received user_ids:", userId);  // Log user IDs to see if they are correct
 
     // const userId = 11;
     const {description} = req.body;
@@ -284,6 +317,18 @@ app.post('/posts', authenticateToken, upload.single("image"), (req, res) => {
         return res.status(201).json({ message: "Post sucessfully made" });
 
     })
+})
+
+//like count
+//id user_id post_id
+app.post ('/likes', authenticateToken, (req, res) => {
+    const likeCountQuery = 'SELECT COUNT(*) AS like_count FROM likes WHERE post_id = ?';
+
+})
+
+//get like count
+app.get('/likes', authenticateToken, (req, res) => {
+    const getLikeQuery = 'SELECT post_id, COUNT(*) AS like_count FROM likes GROUP BY post_id';
 })
 
 // user_id, description, media_url, created_at
@@ -348,7 +393,7 @@ app.post('/login', (req, res) => {
         if(result.length > 0){
             const user = result[0];
             //generate token
-            const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '2h' });
+            const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '1h' });
 
             return res.json({ success: true, token, message: "Login Successful" });
         }
@@ -361,6 +406,12 @@ app.post('/login', (req, res) => {
 
 
 })
+
+
+app.all('*', (req, res) => {
+    console.log(`Unmatched route: ${req.method} ${req.originalUrl}`);
+    res.status(404).json({ error: 'Route not found' });
+});
 
 
 

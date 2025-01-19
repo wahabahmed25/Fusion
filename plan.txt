@@ -1,3 +1,6 @@
+POST: send data to server
+GET: retrieve data
+
 loging brings you to home page
 
 App.jsx is not Home page (IMPO)
@@ -58,4 +61,10 @@ id, user_id, post_id
 getting the posters profile : name, time created, and username
 
 fetch posts user_id with get request token:
-then fetch users with the user_id from post to get the users profile
+then fetch users with the user_id from post to get the users profile\
+
+
+likes:
+
+sending data (post) to likes table to update like count
+
