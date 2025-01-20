@@ -1,30 +1,31 @@
 import PropTypes from "prop-types";
 import commentIcon from "../icons/comment-icon.svg";
 import saveIcon from "../icons/save-icon.svg";
-import heartIcon from "../icons/heart-icon.svg";
-import filledHeartIcon from "../icons/redHeart-icon.svg"; // Add a filled heart icon for 'liked' state
-import { useState } from "react";
+// import heartIcon from "../icons/heart-icon.svg";
+// import filledHeartIcon from "../icons/redHeart-icon.svg"; // Add a filled heart icon for 'liked' state
+// import { useState } from "react";
 import defaultProfile from "../icons/default-profile.svg"; // or adjust the relative path if needed
-
+import LikeButton from "./LikeButton";
 const PostCard = ({
   media_url,
   description,
-  like = 0,
   comment = 0,
   save = false,
-  onLike,
+  post_id,
+  likes,
+  // like = 0,
   user, // User profile data passed from Media.jsx
 }) => {
   const imageUrl = `http://localhost:8081/${media_url}`;
-  const [likes, setLikes] = useState(like); // Initialize with the passed "like" prop
-  const [isLiked, setIsLiked] = useState(false);
+  // const [likes, setLikes] = useState(like); // Initialize with the passed "like" prop
+  // const [isLiked, setIsLiked] = useState(false);
 
-  const handleLikes = () => {
-    const newLikes = isLiked ? likes - 1 : likes + 1; // Toggle likes count
-    setLikes(newLikes);
-    setIsLiked((prev) => !prev);
-    if (onLike) onLike(newLikes, !isLiked); // Inform parent if needed
-  };
+  // const handleLikes = () => {
+  //   const newLikes = isLiked ? likes - 1 : likes + 1; // Toggle likes count
+  //   setLikes(newLikes);
+  //   setIsLiked((prev) => !prev);
+  //   if (onLike) onLike(newLikes, !isLiked); // Inform parent if needed
+  // };
 
   return (
     <div className="bg-white shadow-lg rounded-lg p-4 max-w-md mx-auto my-4">
@@ -58,25 +59,9 @@ const PostCard = ({
       </div>
 
       {/* Post Actions */}
-      <div className="mt-4 flex justify-between items-center text-gray-600">
-        {/* Like and Comment */}
+       <div className="mt-4 flex justify-between items-center text-gray-600">
         <div className="flex items-center gap-4">
-          {/* Like */}
-          <div className="flex items-center gap-1">
-            <button
-              className={`hover:text-blue-600 ${
-                isLiked ? "text-red-500" : "text-gray-500"
-              }`}
-              onClick={handleLikes}
-            >
-              <img
-                src={isLiked ? filledHeartIcon : heartIcon}
-                alt="like"
-                className="w-6 h-6"
-              />
-            </button>
-            <span className="text-sm">{likes}</span>
-          </div>
+          <LikeButton post_id={post_id} likes = {likes} />
 
           {/* Comment */}
           <div className="flex items-center gap-1">
@@ -108,6 +93,8 @@ PostCard.propTypes = {
   like: PropTypes.number,
   comment: PropTypes.number,
   save: PropTypes.bool,
+  likes: PropTypes.number,
+  post_id: PropTypes.number.isRequired,
   onLike: PropTypes.func, // Optional callback for parent component
   user: PropTypes.shape({
     profile_pic: PropTypes.string,

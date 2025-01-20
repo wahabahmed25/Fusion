@@ -321,15 +321,80 @@ app.post('/posts', authenticateToken, upload.single("image"), (req, res) => {
 
 //like count
 //id user_id post_id
-app.post ('/likes', authenticateToken, (req, res) => {
-    const likeCountQuery = 'SELECT COUNT(*) AS like_count FROM likes WHERE post_id = ?';
+app.post('/likes', authenticateToken, (req, res) => {
+    const userId = req.user.id;
+    const { post_id } = req.body;
+    if (!post_id || typeof post_id !== 'number') {
+        console.error("post_id is missing:", post_id);
+        return res.status(400).json({ error: "post_id is required" });
+    }
+    console.log('User ID:', userId);
+    console.log('Post ID:', post_id);
+    console.log('Incrementing like count for Post ID:', post_id);
+    console.log('Decrementing like count for Post ID:', post_id);
 
-})
+    //queries to handle liking
+    const checkLikeQuery = 'SELECT COUNT(*) AS like_count FROM likes WHERE user_id = ? AND post_id = ?';
+    const likeQuery = 'INSERT INTO likes (user_id, post_id) VALUES(?, ?)';
+    const unlikeQuery = 'DELETE FROM likes WHERE user_id = ? AND post_id = ?';
+    const incrementLikeCount = 'UPDATE posts SET like_count = like_count + 1 WHERE id = ?';
+    const decrementLikeCount = 'UPDATE posts SET like_count = like_count - 1 WHERE id = ?';
+
+    const likeValues = [userId, post_id];
+
+   
+    // Check if the user already liked the post
+    database.query(checkLikeQuery, likeValues, (err, results) => {
+        if (err) {
+            console.error('Error checking likes:', err);
+            return res.status(500).json({ error: 'Failed to check likes' });
+        }
+
+        const alreadyLiked = results[0].like_count > 0;
+
+        if (alreadyLiked) {
+            // Unlike the post
+            database.query(unlikeQuery, likeValues, (err) => {
+                if (err) {
+                    console.error('Error unliking post:', err);
+                    return res.status(500).json({ error: 'Failed to unlike the post' });
+                }
+
+                // Decrement like count
+                database.query(decrementLikeCount, [post_id], (err) => {
+                    if (err) {
+                        console.error('Error decrementing like count:', err);
+                        return res.status(500).json({ error: 'Failed to update like count' });
+                    }
+                    return res.status(200).json({ message: 'Post unliked' });
+                });
+            });
+        } else {
+            // Like the post
+            database.query(likeQuery, likeValues, (err) => {
+                if (err) {
+                    console.error('Error liking post:', err);
+                    return res.status(500).json({ error: 'Failed to like the post' });
+                }
+
+                // Increment like count
+                database.query(incrementLikeCount, [post_id], (err) => {
+                    if (err) {
+                        console.error('Error incrementing like count:', err);
+                        return res.status(500).json({ error: 'Failed to update like count' });
+                    }
+                    return res.status(201).json({ message: 'Post liked' });
+                });
+                
+            });
+        }
+    });
+});
 
 //get like count
-app.get('/likes', authenticateToken, (req, res) => {
-    const getLikeQuery = 'SELECT post_id, COUNT(*) AS like_count FROM likes GROUP BY post_id';
-})
+// app.get('/likes', authenticateToken, (req, res) => {
+//     const getLikeQuery = 'SELECT post_id, COUNT(*) AS like_count FROM likes GROUP BY post_id';
+// })
 
 // user_id, description, media_url, created_at
 
@@ -393,7 +458,7 @@ app.post('/login', (req, res) => {
         if(result.length > 0){
             const user = result[0];
             //generate token
-            const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '1h' });
+            const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '2h' });
 
             return res.json({ success: true, token, message: "Login Successful" });
         }

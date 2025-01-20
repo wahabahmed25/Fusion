@@ -17,15 +17,18 @@ const Media = () => {
         <UserProfilePosts onPostsFetched={handlePostsFetched} />
         <ul>
           {media.map((post) => (
-            <PostCard
-              key={post.post_id}
-              media_url={post.media_url}
-              description={post.description}
-              like={post.like || 0}
-              comment={post.comment || 0}
-              save={post.save || false}
-              user={post.user} // Pass user profile info to PostCard
+            <li key = {post.post_id} >
+              <PostCard
+                media_url={post.media_url}
+                description={post.description}
+                post_id={post.post_id}
+                // like = {post.like}
+                comment={post.comment || 0}
+                save={post.save || false}
+                user={post.user} // Pass user profile info to PostCard
             />
+            </li>
+            
           ))}
         </ul>
       </div>
