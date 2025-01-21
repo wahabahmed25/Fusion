@@ -324,25 +324,19 @@ app.post('/posts', authenticateToken, upload.single("image"), (req, res) => {
 app.post('/likes', authenticateToken, (req, res) => {
     const userId = req.user.id;
     const { post_id } = req.body;
-    if (!post_id || typeof post_id !== 'number') {
-        console.error("post_id is missing:", post_id);
+
+    if (!post_id) {
         return res.status(400).json({ error: "post_id is required" });
     }
-    console.log('User ID:', userId);
-    console.log('Post ID:', post_id);
-    console.log('Incrementing like count for Post ID:', post_id);
-    console.log('Decrementing like count for Post ID:', post_id);
 
-    //queries to handle liking
+    // Queries
     const checkLikeQuery = 'SELECT COUNT(*) AS like_count FROM likes WHERE user_id = ? AND post_id = ?';
-    const likeQuery = 'INSERT INTO likes (user_id, post_id) VALUES(?, ?)';
+    const likeQuery = 'INSERT INTO likes (user_id, post_id) VALUES (?, ?)';
     const unlikeQuery = 'DELETE FROM likes WHERE user_id = ? AND post_id = ?';
-    const incrementLikeCount = 'UPDATE posts SET like_count = like_count + 1 WHERE id = ?';
-    const decrementLikeCount = 'UPDATE posts SET like_count = like_count - 1 WHERE id = ?';
+    const likeCountQuery = 'SELECT COUNT(*) AS like_count FROM likes WHERE post_id = ?';
 
     const likeValues = [userId, post_id];
 
-   
     // Check if the user already liked the post
     database.query(checkLikeQuery, likeValues, (err, results) => {
         if (err) {
@@ -357,16 +351,18 @@ app.post('/likes', authenticateToken, (req, res) => {
             database.query(unlikeQuery, likeValues, (err) => {
                 if (err) {
                     console.error('Error unliking post:', err);
-                    return res.status(500).json({ error: 'Failed to unlike the post' });
+                    return res.status(500).json({ error: 'Failed to unlike post' });
                 }
 
-                // Decrement like count
-                database.query(decrementLikeCount, [post_id], (err) => {
+                // Fetch the updated like count
+                database.query(likeCountQuery, [post_id], (err, results) => {
                     if (err) {
-                        console.error('Error decrementing like count:', err);
-                        return res.status(500).json({ error: 'Failed to update like count' });
+                        console.error('Error fetching like count:', err);
+                        return res.status(500).json({ error: 'Failed to fetch like count' });
                     }
-                    return res.status(200).json({ message: 'Post unliked' });
+
+                    const likeCount = results[0].like_count;
+                    return res.status(200).json({ message: 'Post unliked', likeCount });
                 });
             });
         } else {
@@ -374,30 +370,71 @@ app.post('/likes', authenticateToken, (req, res) => {
             database.query(likeQuery, likeValues, (err) => {
                 if (err) {
                     console.error('Error liking post:', err);
-                    return res.status(500).json({ error: 'Failed to like the post' });
+                    return res.status(500).json({ error: 'Failed to like post' });
                 }
 
-                // Increment like count
-                database.query(incrementLikeCount, [post_id], (err) => {
+                // Fetch the updated like count
+                database.query(likeCountQuery, [post_id], (err, results) => {
                     if (err) {
-                        console.error('Error incrementing like count:', err);
-                        return res.status(500).json({ error: 'Failed to update like count' });
+                        console.error('Error fetching like count:', err);
+                        return res.status(500).json({ error: 'Failed to fetch like count' });
                     }
-                    return res.status(201).json({ message: 'Post liked' });
+
+                    const likeCount = results[0].like_count;
+                    return res.status(201).json({ message: 'Post liked', likeCount });
                 });
-                
             });
         }
     });
 });
 
-//get like count
-// app.get('/likes', authenticateToken, (req, res) => {
-//     const getLikeQuery = 'SELECT post_id, COUNT(*) AS like_count FROM likes GROUP BY post_id';
-// })
+
+// get like count
+app.get('/likes/:post_id', authenticateToken, (req, res) => {
+    const userId = req.user.id; // Get user ID from token
+    const post_id = req.params.post_id;
+
+    const getLikesCountQuery = 'SELECT COUNT(*) AS like_count FROM likes WHERE post_id = ?';
+    const isLikedQuery = 'SELECT COUNT(*) AS isLiked FROM likes WHERE user_id = ? AND post_id = ?';
+
+    database.query(getLikesCountQuery, [post_id], (err, result) => {
+        if (err) {
+            console.error('Error fetching likes count:', err);
+            return res.status(500).json({ error: 'Failed to fetch likes count' });
+        }
+
+        const likeCount = result[0].like_count;
+
+        database.query(isLikedQuery, [userId, post_id], (err, result) => {
+            if (err) {
+                console.error('Error checking if post is liked:', err);
+                return res.status(500).json({ error: 'Failed to check liked state' });
+            }
+
+            const isLiked = result[0].isLiked > 0;
+            res.status(200).json({ post_id, likeCount, isLiked });
+        });
+    });
+});
 
 // user_id, description, media_url, created_at
 
+//comments
+
+app.get('comments/:post_id', authenticateToken, (req, res) => {
+    const userId = req.user.id;
+    const post_id = req.params.post_id;
+
+    const getComments = 'SELECT * FROM comments WHERE comment = ?'
+    database.query(getComments, [post_id], (err, result) => {
+        if (err) {
+            console.error('Error getting comments', err);
+            return res.status(500).json({ error: 'error checking comments' });
+        }
+        
+    })
+
+})
 
 app.post('/signup', (req, res) => {
     const { fullName, username, email, password } = req.body;

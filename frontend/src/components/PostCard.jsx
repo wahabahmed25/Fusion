@@ -3,33 +3,31 @@ import commentIcon from "../icons/comment-icon.svg";
 import saveIcon from "../icons/save-icon.svg";
 // import heartIcon from "../icons/heart-icon.svg";
 // import filledHeartIcon from "../icons/redHeart-icon.svg"; // Add a filled heart icon for 'liked' state
-// import { useState } from "react";
+import { useState } from "react";
 import defaultProfile from "../icons/default-profile.svg"; // or adjust the relative path if needed
 import LikeButton from "./LikeButton";
+import CommentSection from "./CommentSection";
+
 const PostCard = ({
   media_url,
   description,
   comment = 0,
   save = false,
   post_id,
-  likes,
+
   // like = 0,
   user, // User profile data passed from Media.jsx
 }) => {
   const imageUrl = `http://localhost:8081/${media_url}`;
-  // const [likes, setLikes] = useState(like); // Initialize with the passed "like" prop
-  // const [isLiked, setIsLiked] = useState(false);
-
-  // const handleLikes = () => {
-  //   const newLikes = isLiked ? likes - 1 : likes + 1; // Toggle likes count
-  //   setLikes(newLikes);
-  //   setIsLiked((prev) => !prev);
-  //   if (onLike) onLike(newLikes, !isLiked); // Inform parent if needed
-  // };
+  const [showModal, setShowModal] = useState(false);
+    const toggleModal = () => {
+      setShowModal((prev => !prev));
+    }
 
   return (
     <div className="bg-white shadow-lg rounded-lg p-4 max-w-md mx-auto my-4">
       {/* User Profile Section */}
+
       {user && (
         <div className="flex items-center mb-4">
           <img
@@ -56,21 +54,35 @@ const PostCard = ({
           alt="Post"
           className="object-cover w-full h-full cursor-pointer hover:opacity-90 transition-opacity"
         />
+
       </div>
+      {showModal && <CommentSection showModal={showModal} toggleModal={toggleModal} />}
+
+
 
       {/* Post Actions */}
        <div className="mt-4 flex justify-between items-center text-gray-600">
         <div className="flex items-center gap-4">
-          <LikeButton post_id={post_id} likes = {likes} />
+          <LikeButton post_id={post_id} />
 
           {/* Comment */}
+
           <div className="flex items-center gap-1">
             <button className="text-green-500 hover:text-green-600">
-              <img src={commentIcon} alt="comment" className="w-6 h-6" />
+              <img 
+                src={commentIcon} 
+                alt="comment" 
+                className="w-6 h-6"
+                onClick={toggleModal}
+          
+                />
             </button>
+            
             <span className="text-sm">{comment}</span>
           </div>
+
         </div>
+
 
         {/* Save */}
         <div className="flex items-center">

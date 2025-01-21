@@ -68,3 +68,14 @@ likes:
 
 sending data (post) to likes table to update like count
 
+comments table: id, user_id, comment, created_at, post_id;
+comment:
+onclick of comments:
+opens modal ovrlay with comment section;
+in comment section:
+no comments yet || {the comments};
+[type to add comment];
+
+taking the value in the input field;
+storing that in comments table "comment" including with corresponding user_id, post_id
+
