@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/Home"
+import SavedPage from "./pages/SavedPage"
 // import { Link } from "react-router-dom";
 const App = () => {
 
@@ -17,6 +18,7 @@ const App = () => {
 
 
       <Routes>
+        <Route path = "/saved" element = {<SavedPage />} />
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/login" element = {<LoginPage />}/>
         <Route path = "/home" element = {<HomePage />} />

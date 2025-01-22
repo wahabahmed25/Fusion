@@ -44,32 +44,8 @@ const UserProfilePosts = ({ onPostsFetched }) => {
   if (error) return <p>{error}</p>;
 
   return (
-    <div className="post-container">
-      {/* {posts.map((post) => (
-        <div key={post.post_id} className="post">
-          <div className="user-profile">
-            <img
-              src={post.user.profile_pic}
-              alt={`${post.user.username}'s profile`}
-              className="profile-pic"
-            />
-            <div>
-              <p className="username">@{post.user.username}</p>
-              <p className="name">{post.user.name}</p>
-            </div>
-          </div>
-          <div className="post-content">
-            <p className="description">{post.description}</p>
-            {post.media_url && (
-              <img
-                src={post.media_url}
-                alt="Post media"
-                className="post-media"
-              />
-            )}
-          </div>
-        </div>
-      ))} */}
+    <div className="">
+
     </div>
   );
 };

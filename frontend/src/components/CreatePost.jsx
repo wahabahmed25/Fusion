@@ -1,6 +1,6 @@
 import closeIcon from "../icons/x-icon.svg";
 import InputField from "./InputField";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 
 const CreatePost = ({ showModal, toggleModal }) => {
@@ -11,7 +11,7 @@ const CreatePost = ({ showModal, toggleModal }) => {
   const [formValue, setFormValue] = useState({
     description: "",
     image: "",
-  })
+  });
 
   // const handleCaptionChange = (e) => {
   //   setCaption(e.target.value);
@@ -21,16 +21,16 @@ const CreatePost = ({ showModal, toggleModal }) => {
   formData.append("image", uploadImage);
 
   const handleChange = (e) => {
-    const {name, value} = e.target;
+    const { name, value } = e.target;
     setFormValue((prevValues) => ({ ...prevValues, [name]: value }));
-  }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem("authToken")
+    const token = localStorage.getItem("authToken");
 
-    if(!token){
-      console.log("error with user authentication")
+    if (!token) {
+      console.log("error with user authentication");
       return;
     }
     try {
@@ -48,17 +48,31 @@ const CreatePost = ({ showModal, toggleModal }) => {
         toggleModal();
       } else {
         const errorData = await response.json();
-        setError({ message: errorData.error || "Error making post, try again" });
+        setError({
+          message: errorData.error || "Error making post, try again",
+        });
       }
     } catch (error) {
       console.log(error);
     }
   };
+  useEffect(() => {
+    // Cleanup the body overflow style when modal is closed
+    if (showModal) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [showModal]);
 
   return (
     <>
       {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-opacity-50">
+        <div className="fixed inset-0 flex items-center no-scrollbar justify-center bg-opacity-50">
           <form onSubmit={handleSubmit}>
             <div className="bg-white rounded-lg shadow-lg w-96 p-6 relative">
               {/* Close Icon */}

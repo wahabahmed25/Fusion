@@ -79,3 +79,8 @@ no comments yet || {the comments};
 taking the value in the input field;
 storing that in comments table "comment" including with corresponding user_id, post_id
 
+saved_posts table:
+user_id, post_id, saved_at
+save:
+onclick sending data to show that the posts has been saved_at
+we get: the ENTIRE saved post

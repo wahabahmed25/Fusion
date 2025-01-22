@@ -319,6 +319,42 @@ app.post('/posts', authenticateToken, upload.single("image"), (req, res) => {
     })
 })
 
+// saved_posts table:
+// user_id, post_id, saved_at
+app.post('/saved_posts', authenticateToken, (req, res) => {
+    const userId = req.user.id;
+    const { post_id}  = req.body;
+    const checkSavedQuery = 'SELECT COUNT(*) AS save_count FROM saved_posts WHERE user_id = ? AND post_id = ?';
+    const savePostQuery = 'INSERT INTO saved_posts (user_id, post_id, saved_at) VALUES (?, ?, NOW())';
+    const unSavePostQuery = 'DELETE FROM saved_posts WHERE user_id = ? AND post_id = ?';
+
+    const values = [userId, post_id];
+
+    database.query(checkSavedQuery, values, (checkError, checkResult) => {
+        if(checkError){
+            console.error("error saving post", checkError);
+            return res.status(500).json({ error: "error saving post" });
+        }
+        const alreadySaved = checkResult[0].save_count > 0;
+        if(alreadySaved){
+            database.query(unSavePostQuery, values, (unSaveError) => {
+                if(unSaveError){
+                    console.error("error unsaving post", unSaveError);
+                    return res.status(500).json({ error: "error unsaving post" });
+                }
+                return res.status(200).json({ message: 'Post unsaved successfully' });
+            })
+            database.query(savePostQuery, [...values], (saveError) => {
+                if(saveError){
+                    console.error('Error saving post', saveError);
+                    return res.status(500).json({ error: 'Error saving post' });
+                }
+                return res.status(200).json({ message: 'Post saved successfully' });
+            })
+        }
+    })
+})
+
 //like count
 //id user_id post_id
 app.post('/likes', authenticateToken, (req, res) => {
@@ -421,20 +457,67 @@ app.get('/likes/:post_id', authenticateToken, (req, res) => {
 
 //comments
 
-app.get('comments/:post_id', authenticateToken, (req, res) => {
+app.get('/comments/:post_id', authenticateToken, (req, res) => {
     const userId = req.user.id;
     const post_id = req.params.post_id;
-
-    const getComments = 'SELECT * FROM comments WHERE comment = ?'
-    database.query(getComments, [post_id], (err, result) => {
+    const commentCountQuery = 'SELECT COUNT(*) AS comment_count FROM comments WHERE post_id = ?'
+    const getCommentsQuery = `
+        SELECT 
+            comments.id, 
+            comments.user_id, 
+            comments.comment, 
+            comments.created_at, 
+            user_profiles.profile_pic, 
+            users.full_name
+        FROM comments 
+        JOIN users ON comments.user_id = users.id 
+        JOIN user_profiles ON users.id = user_profiles.user_id
+        WHERE comments.post_id = ? 
+        ORDER BY comments.created_at DESC`;
+    database.query(commentCountQuery, [post_id], (err, countResult) => {
         if (err) {
-            console.error('Error getting comments', err);
-            return res.status(500).json({ error: 'error checking comments' });
+            console.error('Error getting comment count', err);
+            return res.status(500).json({ error: 'error checking comment count' });
         }
-        
-    })
+        const commentCount = countResult[0].comment_count;
 
+        database.query(getCommentsQuery, [post_id], (err, commentsResult) => {
+            if(err){
+                console.error('Error getting comments', err);
+                return res.status(500).json({ error: 'error getting comments' });
+            }
+            res.status(200).json({ post_id, commentCount, comments: commentsResult });
+        })
+    })
 })
+
+//insert comments into database
+app.post('/comments', authenticateToken, (req, res) => {
+    const userId = req.user.id;
+    const { comment, post_id } = req.body;
+    if(!comment){
+        return res.status(400).json({ error: "commenting field is required" });
+    }
+    if (!post_id) {
+        return res.status(400).json({ error: "Post ID is required" });
+    }
+    const insertCommentQuery = `INSERT INTO comments (user_id, comment, post_id, created_at) VALUES (?, ?, ?, NOW())`;
+    const commentValues = [userId, comment, post_id];
+    database.query(insertCommentQuery, commentValues, (err, result ) => {
+        if(err){
+            console.error("Error inserting comment:", err);
+            return res.status(500).json({ error: "Failed to insert comment into table" });
+        }
+        return res.status(201).json({
+            message: "Comment inserted successfully!",
+            commentId: result.insertId, // Include the ID of the inserted comment
+        });
+
+    })
+})
+
+//saved
+
 
 app.post('/signup', (req, res) => {
     const { fullName, username, email, password } = req.body;

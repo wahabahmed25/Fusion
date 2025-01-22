@@ -1,28 +1,29 @@
 import PropTypes from "prop-types";
-import commentIcon from "../icons/comment-icon.svg";
-import saveIcon from "../icons/save-icon.svg";
+// import commentIcon from "../icons/comment-icon.svg";
+// import saveIcon from "../icons/unsaved-icon.svg";
 // import heartIcon from "../icons/heart-icon.svg";
 // import filledHeartIcon from "../icons/redHeart-icon.svg"; // Add a filled heart icon for 'liked' state
-import { useState } from "react";
+// import { useState } from "react";
 import defaultProfile from "../icons/default-profile.svg"; // or adjust the relative path if needed
 import LikeButton from "./LikeButton";
 import CommentSection from "./CommentSection";
-
+import SavePosts from "./SavePosts";
 const PostCard = ({
   media_url,
   description,
-  comment = 0,
-  save = false,
+  // comment = 0,
+  // save = false,
   post_id,
-
+  edit = "Edit", //has edit post and delete post feature
+  //EDIT FEATURE: only applies to YOUR posts
   // like = 0,
   user, // User profile data passed from Media.jsx
 }) => {
   const imageUrl = `http://localhost:8081/${media_url}`;
-  const [showModal, setShowModal] = useState(false);
-    const toggleModal = () => {
-      setShowModal((prev => !prev));
-    }
+  // const [showModal, setShowModal] = useState(false);
+  //   const toggleModal = () => {
+  //     setShowModal((prev => !prev));
+  //   }
 
   return (
     <div className="bg-white shadow-lg rounded-lg p-4 max-w-md mx-auto my-4">
@@ -39,14 +40,21 @@ const PostCard = ({
             <p className="text-sm font-bold lowercase">@{user.username || "Unknown"}</p>
             <p className="text-xs text-gray-600 uppercase">{user.name || "Anonymous"}</p>
           </div>
+          
+
         </div>
+        
       )}
+      {/* edit button */}
+      
 
       {/* Post Description */}
       <div className="mt-4">
+        
         <h3 className="text-md px-1 pb-2 text-gray-800">{description}</h3>
+        
       </div>
-
+      
       {/* Post Image */}
       <div className="w-full h-80 overflow-hidden rounded-md mb-4">
         <img
@@ -56,7 +64,6 @@ const PostCard = ({
         />
 
       </div>
-      {showModal && <CommentSection showModal={showModal} toggleModal={toggleModal} />}
 
 
 
@@ -66,34 +73,29 @@ const PostCard = ({
           <LikeButton post_id={post_id} />
 
           {/* Comment */}
-
-          <div className="flex items-center gap-1">
-            <button className="text-green-500 hover:text-green-600">
-              <img 
-                src={commentIcon} 
-                alt="comment" 
-                className="w-6 h-6"
-                onClick={toggleModal}
-          
-                />
-            </button>
-            
-            <span className="text-sm">{comment}</span>
+          {<CommentSection post_id = {post_id}/>}
+          <div className="flex items-end justify-end">
+            <button className="bg-blue-800 p-2 rounded-lg w-24 text-white ">{edit}</button>
           </div>
+          
+
+
+          
 
         </div>
 
 
         {/* Save */}
-        <div className="flex items-center">
+        <SavePosts />
+        {/* <div className="flex items-center">
           <button
             className={`text-yellow-500 hover:text-yellow-600 ${
               save ? "font-bold" : ""
             }`}
           >
-            <img src={saveIcon} alt="save" className="w-6 h-6" />
+            <img src={saveIcon} alt="save" className="w-7 h-7" />
           </button>
-        </div>
+        </div> */}
       </div>
     </div>
   );
@@ -106,6 +108,7 @@ PostCard.propTypes = {
   comment: PropTypes.number,
   save: PropTypes.bool,
   likes: PropTypes.number,
+  edit: PropTypes.string,
   post_id: PropTypes.number.isRequired,
   onLike: PropTypes.func, // Optional callback for parent component
   user: PropTypes.shape({

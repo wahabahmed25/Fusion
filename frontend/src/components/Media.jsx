@@ -11,19 +11,19 @@ const Media = () => {
   };
 
   return (
-    <div className="flex justify-center">
-      <div className="p-3 min-w-full">
+    <div className="flex justify-center overflow-auto">
+      <div className="p-3 min-w-full no-scrollbar::-webkit-scrollbar">
         {/* {error && <p className="text-red-500">{error}</p>} */}
         <UserProfilePosts onPostsFetched={handlePostsFetched} />
         <ul>
           {media.map((post) => (
-            <li key = {post.post_id} >
+            <li key = {post.post_id}>
               <PostCard
                 media_url={post.media_url}
                 description={post.description}
                 post_id={post.post_id}
                 // like = {post.like}
-                comment={post.comment || 0}
+                comment={post.comment || null}
                 save={post.save || false}
                 user={post.user} // Pass user profile info to PostCard
             />
