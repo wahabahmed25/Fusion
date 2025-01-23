@@ -86,7 +86,7 @@ const PostCard = ({
 
 
         {/* Save */}
-        <SavePosts />
+        <SavePosts post_id={post_id}/>
         {/* <div className="flex items-center">
           <button
             className={`text-yellow-500 hover:text-yellow-600 ${

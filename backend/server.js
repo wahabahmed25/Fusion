@@ -324,6 +324,11 @@ app.post('/posts', authenticateToken, upload.single("image"), (req, res) => {
 app.post('/saved_posts', authenticateToken, (req, res) => {
     const userId = req.user.id;
     const { post_id}  = req.body;
+    if(!post_id){
+        console.error("post_id is not provided");
+        return res.status(400).json({ error: "post_id is required" });
+
+    }
     const checkSavedQuery = 'SELECT COUNT(*) AS save_count FROM saved_posts WHERE user_id = ? AND post_id = ?';
     const savePostQuery = 'INSERT INTO saved_posts (user_id, post_id, saved_at) VALUES (?, ?, NOW())';
     const unSavePostQuery = 'DELETE FROM saved_posts WHERE user_id = ? AND post_id = ?';
@@ -344,7 +349,9 @@ app.post('/saved_posts', authenticateToken, (req, res) => {
                 }
                 return res.status(200).json({ message: 'Post unsaved successfully' });
             })
-            database.query(savePostQuery, [...values], (saveError) => {
+            
+        } else{
+            database.query(savePostQuery, values, (saveError) => {
                 if(saveError){
                     console.error('Error saving post', saveError);
                     return res.status(500).json({ error: 'Error saving post' });
@@ -355,6 +362,86 @@ app.post('/saved_posts', authenticateToken, (req, res) => {
     })
 })
 
+
+// app.get('/saved_posts/:post_id', authenticateToken, (req, res) => {
+//     const userId = req.user.id;
+//     const post_id = req.params.post_id;
+  
+//     const query = `
+//         SELECT 
+//             p.id AS post_id,
+//             p.description,
+//             p.media_url,
+//             u.full_name,
+//             u.username,
+//             up.profile_pic
+//         FROM 
+//             saved_posts sp
+//         INNER JOIN posts p ON sp.post_id = p.id
+//         INNER JOIN users u ON p.user_id = u.id
+//         INNER JOIN user_profiles up ON u.id = up.user_id
+//         WHERE 
+//             sp.user_id = ?;
+//     `;
+//     database.query(query, [userId, post_id], (err, result) => {
+//       if (err) {
+//         console.error('Error fetching saved state', err);
+//         return res.status(500).json({ error: 'Error fetching saved state' });
+//       }
+//       const isSaved = result[0].isSaved > 0;
+//       res.json({ isSaved });
+//     });
+// });
+  
+
+app.get('/saved_posts', authenticateToken, (req, res) => {
+    const userId = req.user.id;
+  
+    // Query to fetch all saved posts for the authenticated user
+    const query = `
+        SELECT 
+            p.id AS post_id,
+            p.description,
+            p.media_url,
+            u.full_name,
+            u.username,
+            up.profile_pic
+        FROM 
+            saved_posts sp
+        INNER JOIN posts p ON sp.post_id = p.id
+        INNER JOIN users u ON p.user_id = u.id
+        INNER JOIN user_profiles up ON u.id = up.user_id
+        WHERE 
+            sp.user_id = ?;
+    `;
+
+    database.query(query, [userId], (err, result) => {
+        if (err) {
+            console.error('Error fetching saved posts', err);
+            return res.status(500).json({ error: 'Error fetching saved posts' });
+        }
+
+        // If no saved posts, send an empty array
+        if (result.length === 0) {
+            return res.json([]);
+        }
+
+        // Return all saved posts
+        const savedPosts = result.map(post => ({
+            post_id: post.post_id,
+            description: post.description,
+            media_url: post.media_url,
+            user: {
+                full_name: post.full_name,
+                username: post.username,
+                profile_pic: post.profile_pic,
+            },
+        }));
+
+        return res.json(savedPosts);
+    });
+});
+
 //like count
 //id user_id post_id
 app.post('/likes', authenticateToken, (req, res) => {
@@ -363,6 +450,7 @@ app.post('/likes', authenticateToken, (req, res) => {
 
     if (!post_id) {
         return res.status(400).json({ error: "post_id is required" });
+    
     }
 
     // Queries

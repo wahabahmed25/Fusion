@@ -142,7 +142,7 @@ const CommentSection = ({ post_id }) => {
   );
 };
 CommentSection.propTypes = {
-  showModal: PropTypes.bool.isRequired,
+  showModal: PropTypes.bool,
   toggleModal: PropTypes.func.isRequired,
   post_id: PropTypes.number.isRequired,
 };
