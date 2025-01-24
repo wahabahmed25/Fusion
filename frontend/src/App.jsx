@@ -4,6 +4,7 @@ import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/HomePage"
 import SavedPage from "./pages/SavedPage"
+import PersonalProfilePage from "./pages/PersonalProfilePage";
 // import { Link } from "react-router-dom";
 const App = () => {
 
@@ -18,6 +19,7 @@ const App = () => {
 
 
       <Routes>
+        <Route path = "/personalProfilePage" element = {<PersonalProfilePage />} />
         <Route path = "/saved" element = {<SavedPage />} />
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/login" element = {<LoginPage />}/>

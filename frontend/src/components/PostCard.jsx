@@ -38,7 +38,7 @@ const PostCard = ({
           />
           <div>
             <p className="text-sm font-bold lowercase">@{user.username || "Unknown"}</p>
-            <p className="text-xs text-gray-600 uppercase">{user.name || "Anonymous"}</p>
+            <p className="text-xs text-gray-600 uppercase">{user.name || user.full_name || "Anonymous"}</p>
           </div>
           
 
@@ -115,6 +115,7 @@ PostCard.propTypes = {
     profile_pic: PropTypes.string,
     username: PropTypes.string,
     name: PropTypes.string,
+    full_name: PropTypes.string,
   }), // Define user profile shape
 };
 

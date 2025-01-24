@@ -361,7 +361,87 @@ app.post('/saved_posts', authenticateToken, (req, res) => {
         }
     })
 })
+// followers table: id, following_user_id, follower_user_id, created_at
+// following:
+app.post('/follow-user', authenticateToken, (req, res) => {
+    const userId = req.user.id; // Current authenticated user
+    const { targetUserId, action } = req.body; // Target user and action (follow/unfollow)
 
+    if (!targetUserId || !["follow", "unfollow"].includes(action)) {
+        return res.status(400).json({ error: "Invalid request" });
+    }
+
+    if (action === "follow") {
+        const followQuery = `
+            INSERT INTO followers (following_user_id, follower_user_id, created_at)
+            VALUES (?, ?, NOW())
+            ON DUPLICATE KEY UPDATE created_at = NOW();
+        `;
+
+        database.query(followQuery, [targetUserId, userId], (followErr) => {
+            if (followErr) {
+                console.error("Error following user:", followErr);
+                return res.status(500).json({ error: "Error following user" });
+            }
+
+            console.log("User followed successfully");
+            return res.status(200).json({ message: "User followed successfully" });
+        });
+    } else if (action === "unfollow") {
+        const unFollowQuery = `
+            DELETE FROM followers
+            WHERE following_user_id = ? AND follower_user_id = ?;
+        `;
+
+        database.query(unFollowQuery, [targetUserId, userId], (unFollowErr) => {
+            if (unFollowErr) {
+                console.error("Error unfollowing user:", unFollowErr);
+                return res.status(500).json({ error: "Error unfollowing user" });
+            }
+
+            console.log("User unfollowed successfully");
+            return res.status(200).json({ message: "User unfollowed successfully" });
+        });
+    }
+});
+
+// Example endpoint to fetch counts
+app.get('/follow-counts/:user_id', (req, res) => {
+    const userId = req.params.user_id;
+
+    const followerCountQuery = `
+        SELECT COUNT(*) AS follower_count 
+        FROM followers 
+        WHERE following_user_id = ?;
+    `;
+
+    const followingCountQuery = `
+        SELECT COUNT(*) AS following_count 
+        FROM followers 
+        WHERE follower_user_id = ?;
+    `;
+
+    database.query(followerCountQuery, [userId], (followerErr, followerResult) => {
+        if (followerErr) {
+            console.error("Error fetching follower count:", followerErr);
+            return res.status(500).json({ error: "Error fetching follower count" });
+        }
+
+        database.query(followingCountQuery, [userId], (followingErr, followingResult) => {
+            if (followingErr) {
+                console.error("Error fetching following count:", followingErr);
+                return res.status(500).json({ error: "Error fetching following count" });
+            }
+
+            return res.status(200).json({
+                follower_count: followerResult[0].follower_count,
+                following_count: followingResult[0].following_count,
+            });
+        });
+    });
+});
+
+  
 
 // app.get('/saved_posts/:post_id', authenticateToken, (req, res) => {
 //     const userId = req.user.id;
@@ -604,7 +684,42 @@ app.post('/comments', authenticateToken, (req, res) => {
     })
 })
 
-//saved
+// fetch suggested users;
+app.get('/suggested-users', authenticateToken, (req, res) => {
+    const userId = req.user.id;
+
+    const query = `
+        SELECT 
+            user_profiles.profile_pic, 
+            users.id AS user_id, 
+            users.full_name, 
+            users.username,
+            EXISTS(
+                SELECT 1 
+                FROM followers 
+                WHERE followers.follower_user_id = ? AND followers.following_user_id = users.id
+            ) AS is_following
+        FROM 
+            user_profiles
+        JOIN 
+            users ON user_profiles.user_id = users.id
+        WHERE 
+            users.id != ?
+        ORDER BY 
+            RAND()
+        LIMIT 8;
+    `;
+
+    database.query(query, [userId, userId], (err, results) => {
+        if (err) {
+            console.error("Error fetching suggested users", err);
+            return res.status(500).json({ error: "Error fetching suggested users" });
+        }
+        console.log("Fetched suggested users successfully");
+        return res.status(200).json(results); // Return the fetched profiles
+    });
+});
+
 
 
 app.post('/signup', (req, res) => {

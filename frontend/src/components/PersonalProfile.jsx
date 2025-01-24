@@ -1,6 +1,7 @@
 import defaultProfile from "../icons/default-profile.svg"; // or adjust the relative path if needed
 import { useEffect, useState } from "react";
 import { extractFirstName } from "./SigninValidation";
+import { Link } from "react-router";
 const PersonalProfile = () => {
   const [yourProfile, setYourProfile] = useState({
     profile_pic: "",
@@ -56,23 +57,24 @@ const PersonalProfile = () => {
   }, []);
   return (
     <div>
-      <div className="text-white p-2 px-6 rounded-lg shadow-lg w-42 text-center flex">
-        <img
-          src={yourProfile.profile_pic}
-          alt="empty"
-          className="w-24 h-24 rounded-full object-cover mr-4"
-        />
-        <div className="flex flex-col justify-center">
-          <p className="text-white text-xl font-semibold mb-2 whitespace-nowrap uppercase">{yourProfile.name}</p>
+      <Link to="/personalProfilePage">
+        <div className="text-white p-2 px-6 rounded-lg shadow-lg w-42 text-center flex hover:bg-slate-800 hover:cursor-pointer">
+          <img
+            src={yourProfile.profile_pic}
+            alt="loading..."
+            className="w-24 h-24 rounded-full object-cover mr-4"
+          />
+          <div className="flex flex-col justify-center">
+            <p className="text-white text-xl font-semibold mb-2 whitespace-nowrap uppercase">
+              {yourProfile.name}
+            </p>
 
-          <p className="text-gray-400 text-sm whitespace-nowrap lowercase">{yourProfile.username}</p>
-
+            <p className="text-gray-400 text-sm whitespace-nowrap lowercase">
+              @{yourProfile.username}
+            </p>
+          </div>
         </div>
-        
-        
-        
-      </div>
-
+      </Link>
     </div>
   );
 };

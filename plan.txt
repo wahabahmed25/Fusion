@@ -84,3 +84,20 @@ user_id, post_id, saved_at
 save:
 onclick sending data to show that the posts has been saved_at
 we get: the ENTIRE saved post
+
+suggested user redo:
+
+fetching 8 most recent (maybe random) user_profiles and displaying then
+
+get 8 user_ids from user_profiles for profile pic, with user_id which matches with id in users table,
+get full_name and username
+
+followers table: id, following_user_id, follower_user_id, created_at
+following:
+create button component:
+when clicked sends posts request to update following count,
+and the user that is followed gets upadted follower count,
+vice versa
+
+when clicked unfollow, delete the count for both
+
