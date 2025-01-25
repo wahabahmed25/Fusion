@@ -31,30 +31,27 @@ const PersonalPosts = () => {
   }, []);
 
   return (
-    <div className="grid ">
+    <div>
       {error && <p className="text-red-500">{error}</p>}
 
-      
-      <ul>
+      {/* Grid Container */}
+      <div className="grid grid-cols-2 gap-4">
         {myPosts.map((post) => (
-          <li key={post.post_id}>
-            
+          <div key={post.post_id} className="w-full">
             <PostCard
-            
               media_url={post.media_url}
               description={post.description}
               post_id={post.post_id}
-              // like = {post.like}
               comment={post.comment || null}
               save={post.save || false}
               user={post.user} // Pass user profile info to PostCard
             />
-            
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 };
+
 
 export default PersonalPosts;

@@ -8,13 +8,14 @@ import defaultProfile from "../icons/default-profile.svg"; // or adjust the rela
 import LikeButton from "./LikeButton";
 import CommentSection from "./CommentSection";
 import SavePosts from "./SavePosts";
+import editIcon from "../icons/edit-icon.svg";
 const PostCard = ({
   media_url,
   description,
   // comment = 0,
   // save = false,
   post_id,
-  edit = "Edit", //has edit post and delete post feature
+  // edit = "Edit", //has edit post and delete post feature
   //EDIT FEATURE: only applies to YOUR posts
   // like = 0,
   user, // User profile data passed from Media.jsx
@@ -74,9 +75,12 @@ const PostCard = ({
 
           {/* Comment */}
           {<CommentSection post_id = {post_id}/>}
-          <div className="flex items-end justify-end">
-            <button className="bg-blue-800 p-2 rounded-lg w-24 text-white ">{edit}</button>
-          </div>
+          <button className="flex items-end justify-end">
+            <img 
+              src={editIcon}
+              alt="edit"
+            />
+          </button>
           
 
 

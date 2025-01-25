@@ -101,3 +101,6 @@ vice versa
 
 when clicked unfollow, delete the count for both
 
+styled Saved page to make it look cle
+aner. fixed up Suggested user feed which fetches 8 users randomly. with the given user feed you are able to f
+ollow or unfollow only works on the POST request side. also created personal profile page which displays the posts you have made, your following/follower count (doesn't work) and basic prototype UI which will be implemented later

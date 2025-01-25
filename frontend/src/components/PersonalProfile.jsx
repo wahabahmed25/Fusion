@@ -2,12 +2,14 @@ import defaultProfile from "../icons/default-profile.svg"; // or adjust the rela
 import { useEffect, useState } from "react";
 import { extractFirstName } from "./SigninValidation";
 import { Link } from "react-router";
+// import FollowCount from "./FollowCount";
 const PersonalProfile = () => {
   const [yourProfile, setYourProfile] = useState({
     profile_pic: "",
     username: "",
     name: "",
   });
+  // const [userId, setUserId] = useState(null); // Add state for user_id
 
   useEffect(() => {
     const token = localStorage.getItem("authToken"); // Retrieve token from storage
@@ -35,6 +37,7 @@ const PersonalProfile = () => {
       .then((profileData) => {
         console.log("Profile data: ", profileData);
         if (profileData && profileData.user_id) {
+          // setUserId(profileData.user_id);
           return fetch(`http://localhost:8081/users/${profileData.user_id}`)
             .then((response) => {
               if (!response.ok) {
@@ -75,6 +78,7 @@ const PersonalProfile = () => {
           </div>
         </div>
       </Link>
+      {/* {userId && <FollowCount user_id={userId} />} */}
     </div>
   );
 };
