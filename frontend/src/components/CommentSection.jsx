@@ -118,7 +118,7 @@ const CommentSection = ({ post_id }) => {
                         alt={comments.full_name}
                         className="w-8 h-8 rounded-full"
                       />
-                      <p className="text-sm font-semibold text-gray-800">
+                      <p className="text-sm lowercase font-semibold text-gray-800">
                         {comments.full_name || "anonamyz"}
                       </p>
                     </div>

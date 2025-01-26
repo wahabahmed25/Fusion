@@ -8,7 +8,8 @@ import defaultProfile from "../icons/default-profile.svg"; // or adjust the rela
 import LikeButton from "./LikeButton";
 import CommentSection from "./CommentSection";
 import SavePosts from "./SavePosts";
-import editIcon from "../icons/edit-icon.svg";
+import EditPosts from "./EditPosts";
+// import editIcon from "../icons/edit-icon.svg";
 const PostCard = ({
   media_url,
   description,
@@ -25,7 +26,9 @@ const PostCard = ({
   //   const toggleModal = () => {
   //     setShowModal((prev => !prev));
   //   }
-
+  const handleEditSuccess = () => {
+    console.log("post updated, refresh")
+  }
   return (
     <div className="bg-white shadow-lg rounded-lg p-4 max-w-md mx-auto my-4">
       {/* User Profile Section */}
@@ -75,13 +78,18 @@ const PostCard = ({
 
           {/* Comment */}
           {<CommentSection post_id = {post_id}/>}
-          <button className="flex items-end justify-end">
+          {/* <button className="flex items-end justify-end">
             <img 
               src={editIcon}
               alt="edit"
             />
-          </button>
-          
+          </button> */}
+          <EditPosts
+            post_id={post_id}
+            onEdit={handleEditSuccess}
+            initialDescription={description} // Pass current description
+            initialMediaUrl={imageUrl} // Pass current media URL
+          />          
 
 
           

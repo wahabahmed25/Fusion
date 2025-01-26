@@ -101,6 +101,14 @@ vice versa
 
 when clicked unfollow, delete the count for both
 
-styled Saved page to make it look cle
-aner. fixed up Suggested user feed which fetches 8 users randomly. with the given user feed you are able to f
-ollow or unfollow only works on the POST request side. also created personal profile page which displays the posts you have made, your following/follower count (doesn't work) and basic prototype UI which will be implemented later
+edit drop down:
+edit post, delete post
+
+edit post: using PUT request? if in edit mode:
+it goes in the createPost screen.
+taking posts and then swapping values or something
+
+delete post:
+onclick send a post requesnt and delete all columns of that post
+
+

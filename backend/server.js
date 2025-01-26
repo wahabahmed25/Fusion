@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 const { Server } = require("socket.io");
 const JWT_SECRET = process.env.JWT_SECRET_KEY;
 const multer = require('multer');
+const { error } = require('console');
 const upload = multer({ dest: 'uploads/' })
 
 const app = express();
@@ -319,6 +320,51 @@ app.post('/posts', authenticateToken, upload.single("image"), (req, res) => {
     })
 })
 
+app.put('/posts/:post_id', authenticateToken, upload.single("image"), (req, res) => {
+    const userId = req.user.id;
+    const post_id = req.params.post_id;
+    const { description } = req.body;
+    const media_url = req.file?.path; // Optional file upload
+  
+    // Check if the user owns the post
+    const checkOwnerShipQuery = 'SELECT user_id FROM posts WHERE id = ?';
+    database.query(checkOwnerShipQuery, [post_id], (err, result) => {
+      if (err) {
+        console.error('Error checking post ownership:', err);
+        return res.status(500).json({ error: 'Error checking post ownership' });
+      }
+  
+      if (result.length === 0 || result[0].user_id !== userId) {
+        return res.status(403).json({ error: 'You do not have permission to edit this post' });
+      }
+  
+      // Prepare the update query and values
+      let updatePostsQuery;
+      let values;
+  
+      if (media_url) {
+        // Update both description and media_url
+        updatePostsQuery = 'UPDATE posts SET description = ?, media_url = ? WHERE id = ?';
+        values = [description, media_url, post_id];
+      } else {
+        // Update only the description
+        updatePostsQuery = 'UPDATE posts SET description = ? WHERE id = ?';
+        values = [description, post_id];
+      }
+  
+      // Execute the update query
+      database.query(updatePostsQuery, values, (updateErr) => {
+        if (updateErr) {
+          console.error("Error updating post:", updateErr);
+          return res.status(500).json({ error: "Failed to update post" });
+        }
+  
+        console.log("Successfully updated the post");
+        return res.status(200).json({ message: "Post successfully updated" });
+      });
+    });
+  });
+  
 // saved_posts table:
 // user_id, post_id, saved_at
 app.post('/saved_posts', authenticateToken, (req, res) => {
@@ -347,7 +393,7 @@ app.post('/saved_posts', authenticateToken, (req, res) => {
                     console.error("error unsaving post", unSaveError);
                     return res.status(500).json({ error: "error unsaving post" });
                 }
-                return res.status(200).json({ message: 'Post unsaved successfully' });
+                return res.status(200).json({ isSaved: false, message: 'Post unsaved successfully' });
             })
             
         } else{
@@ -356,7 +402,7 @@ app.post('/saved_posts', authenticateToken, (req, res) => {
                     console.error('Error saving post', saveError);
                     return res.status(500).json({ error: 'Error saving post' });
                 }
-                return res.status(200).json({ message: 'Post saved successfully' });
+                return res.status(200).json({ isSaved: true, message: 'Post saved successfully' });
             })
         }
     })
@@ -473,54 +519,115 @@ app.get('/follow-counts/:user_id', (req, res) => {
 //     });
 // });
   
-
 app.get('/saved_posts', authenticateToken, (req, res) => {
     const userId = req.user.id;
+    const post_id = req.query.post_id; // Get post_id from query params
   
-    // Query to fetch all saved posts for the authenticated user
-    const query = `
+    // If post_id is provided, check if the specific post is saved
+    if (post_id) {
+      const checkSavedQuery = `
+        SELECT COUNT(*) AS save_count 
+        FROM saved_posts 
+        WHERE user_id = ? AND post_id = ?
+      `;
+      const values = [userId, post_id];
+  
+      database.query(checkSavedQuery, values, (err, result) => {
+        if (err) {
+          console.error('Error checking saved post:', err);
+          return res.status(500).json({ error: 'Error checking saved post' });
+        }
+  
+        const isSaved = result[0].save_count > 0;
+        return res.json({ isSaved }); // Return { isSaved: true/false }
+      });
+    } 
+    // If no post_id, return all saved posts (existing logic)
+    else {
+      const query = `
         SELECT 
-            p.id AS post_id,
-            p.description,
-            p.media_url,
-            u.full_name,
-            u.username,
-            up.profile_pic
-        FROM 
-            saved_posts sp
+          p.id AS post_id,
+          p.description,
+          p.media_url,
+          u.full_name,
+          u.username,
+          up.profile_pic
+        FROM saved_posts sp
         INNER JOIN posts p ON sp.post_id = p.id
         INNER JOIN users u ON p.user_id = u.id
         INNER JOIN user_profiles up ON u.id = up.user_id
-        WHERE 
-            sp.user_id = ?;
-    `;
-
-    database.query(query, [userId], (err, result) => {
+        WHERE sp.user_id = ?;
+      `;
+  
+      database.query(query, [userId], (err, result) => {
         if (err) {
-            console.error('Error fetching saved posts', err);
-            return res.status(500).json({ error: 'Error fetching saved posts' });
+          console.error('Error fetching saved posts', err);
+          return res.status(500).json({ error: 'Error fetching saved posts' });
         }
-
-        // If no saved posts, send an empty array
-        if (result.length === 0) {
-            return res.json([]);
-        }
-
-        // Return all saved posts
+  
         const savedPosts = result.map(post => ({
-            post_id: post.post_id,
-            description: post.description,
-            media_url: post.media_url,
-            user: {
-                full_name: post.full_name,
-                username: post.username,
-                profile_pic: post.profile_pic,
-            },
+          post_id: post.post_id,
+          description: post.description,
+          media_url: post.media_url,
+          user: {
+            full_name: post.full_name,
+            username: post.username,
+            profile_pic: post.profile_pic,
+          },
         }));
-
+  
         return res.json(savedPosts);
-    });
-});
+      });
+    }
+  });
+// app.get('/saved_posts', authenticateToken, (req, res) => {
+//     const userId = req.user.id;
+//     // const post_id = req.query.post_id;
+  
+//     // Query to fetch all saved posts for the authenticated user
+//     const query = `
+//         SELECT 
+//             p.id AS post_id,
+//             p.description,
+//             p.media_url,
+//             u.full_name,
+//             u.username,
+//             up.profile_pic
+//         FROM 
+//             saved_posts sp
+//         INNER JOIN posts p ON sp.post_id = p.id
+//         INNER JOIN users u ON p.user_id = u.id
+//         INNER JOIN user_profiles up ON u.id = up.user_id
+//         WHERE 
+//             sp.user_id = ?;
+//     `;
+
+//     database.query(query, [userId], (err, result) => {
+//         if (err) {
+//             console.error('Error fetching saved posts', err);
+//             return res.status(500).json({ error: 'Error fetching saved posts' });
+//         }
+
+//         // If no saved posts, send an empty array
+//         if (result.length === 0) {
+//             return res.json([]);
+//         }
+
+//         // Return all saved posts
+//         const savedPosts = result.map(post => ({
+//             post_id: post.post_id,
+//             description: post.description,
+//             media_url: post.media_url,
+//             user: {
+//                 full_name: post.full_name,
+//                 username: post.username,
+//                 profile_pic: post.profile_pic,
+//             },
+//         }));
+
+//         return res.json(savedPosts);
+//     });
+// });
 
 //like count
 //id user_id post_id
