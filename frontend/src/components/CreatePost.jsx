@@ -74,7 +74,7 @@ const CreatePost = ({ showModal, toggleModal }) => {
       {showModal && (
         <div className="fixed inset-0 flex items-center no-scrollbar justify-center bg-opacity-50">
           <form onSubmit={handleSubmit}>
-            <div className="bg-white rounded-lg shadow-lg w-96 p-6 relative">
+            <div className="bg-white rounded-lg border shadow-lg w-96 p-6 relative">
               {/* Close Icon */}
               <img
                 src={closeIcon}

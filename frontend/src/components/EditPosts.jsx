@@ -2,17 +2,15 @@ import { useState, useEffect } from "react";
 import editIcon from "../icons/edit-icon.svg";
 import PropTypes from "prop-types";
 import axios from "axios";
-// import InputField from "./InputField";
-// import PostCard from "./PostCard";
 import closeIcon from "../icons/x-icon.svg";
-import uploadIcon from "../icons/upload-icon.svg"
+import uploadIcon from "../icons/upload-icon.svg";
+import DeletePost from "./DeletePost";
 const EditPosts = ({
   post_id,
   onEdit = () => {},
   initialDescription = "",
   initialMediaUrl = "",
 }) => {
-  //   const [edit, setEdit] = useState(false);
   const [dropDown, setDropDown] = useState(false);
   const [error, setError] = useState("");
   const [isEditing, setIsEditing] = useState(false);
@@ -32,13 +30,16 @@ const EditPosts = ({
       setImagePreview(URL.createObjectURL(file));
     }
   };
+
   const handleIconClick = () => {
     setDropDown((prev) => !prev);
   };
+
   const handleEdit = () => {
     setIsEditing(true);
     setDropDown(false);
   };
+
   const handleDescriptionChange = (e) => {
     setDescription(e.target.value);
   };
@@ -47,10 +48,10 @@ const EditPosts = ({
     e.preventDefault();
     const token = localStorage.getItem("authToken");
     if (!token) {
-      console.error("error authorizing");
       setError("error authorizing");
       return;
     }
+
     const formData = new FormData();
     formData.append("description", description);
     if (image) {
@@ -68,11 +69,12 @@ const EditPosts = ({
           },
         }
       );
+
       console.log(response.data);
       setImage(response.data.media_url);
       setDescription(response.data.description);
       setIsEditing(false);
-      onEdit(); //notifies parent component to refresh the post list
+      onEdit(); // Notify parent component to refresh the post list
     } catch (error) {
       console.error("error editing posts", error);
       setError("error editing posts");
@@ -90,30 +92,27 @@ const EditPosts = ({
 
       {/* Dropdown Menu */}
       {dropDown && (
-        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-10">
+        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg border drop-shadow-lg z-10">
           <button
             onClick={handleEdit}
-            className="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+            className="block w-full px-4 py-2 text-sm text-black hover:bg-gray-100"
           >
             Edit
           </button>
-          <button
-            // onClick={handleDelete}
-            className="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-          >
-            Delete
-          </button>
+          <DeletePost post_id={post_id} onDelete={onEdit} />
         </div>
       )}
 
       {/* Edit Form */}
       {isEditing && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-96 relative">
             {/* Close Button */}
-
-            <button onClick={() => setIsEditing(false)} className=" mb-4">
-              <img src={closeIcon} alt="close" className="w-6 h-6" />
+            <button
+              onClick={() => setIsEditing(false)}
+              className="absolute top-2 right-2 p-1 hover:bg-gray-100 rounded-full"
+            >
+              <img src={closeIcon} alt="close" className="w-full h-6" />
             </button>
 
             {/* Form Title */}
@@ -130,7 +129,6 @@ const EditPosts = ({
 
             {/* Image Upload */}
             <div className="mb-4">
-              
               {imagePreview && (
                 <div className="mt-2">
                   <img
@@ -141,21 +139,21 @@ const EditPosts = ({
                 </div>
               )}
               <label className="flex rounded-sm hover:bg-gray-200 hover:cursor-pointer justify-center mt-4">
-                <img 
-                src={uploadIcon}
-                alt="upload image"
-                className="w-9 h-9 flex justify-center items-center"
-                
+                <img
+                  src={uploadIcon}
+                  alt="upload image"
+                  className="w-9 h-9 flex justify-center items-center"
                 />
-                <span className="flex justify-center items-center ml-2">upload image</span>
+                <span className="flex justify-center items-center ml-2">
+                  upload image
+                </span>
                 <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="hidden"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
                 />
               </label>
-              
             </div>
 
             {/* Save Changes Button */}
@@ -171,6 +169,7 @@ const EditPosts = ({
     </div>
   );
 };
+
 EditPosts.propTypes = {
   post_id: PropTypes.number.isRequired,
   onEdit: PropTypes.func, // onEdit is optional
@@ -178,9 +177,4 @@ EditPosts.propTypes = {
   initialMediaUrl: PropTypes.string, // Initial media URL
 };
 
-EditPosts.defaultProps = {
-  onEdit: () => {}, // Default value for onEdit
-  initialDescription: "", // Default value for initialDescription
-  initialMediaUrl: "", // Default value for initialMediaUrl
-};
 export default EditPosts;

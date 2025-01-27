@@ -13,6 +13,8 @@ const upload = multer({ dest: 'uploads/' })
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
+const fs = require('fs');
+const path = require('path');
 
 app.use(express.json());
 
@@ -39,6 +41,9 @@ io.on("connection", (socket) => {
 })
 
 
+
+
+// After deleting the post
 
 
 
@@ -364,7 +369,77 @@ app.put('/posts/:post_id', authenticateToken, upload.single("image"), (req, res)
       });
     });
   });
-  
+
+//deleting posts
+
+app.delete('/posts/:post_id', authenticateToken, (req, res) => {
+  const userId = req.user.id; // Authenticated user ID
+  const post_id = req.params.post_id; // Post ID from URL params
+
+  // Check if the user owns the post
+  const checkOwnerShipQuery = 'SELECT user_id, media_url FROM posts WHERE id = ?';
+  database.query(checkOwnerShipQuery, [post_id], (err, result) => {
+    if (err) {
+      console.error('Error checking post ownership:', err);
+      return res.status(500).json({ error: 'Error checking post ownership' });
+    }
+
+    // If the post doesn't exist or the user doesn't own it
+    if (result.length === 0 || result[0].user_id !== userId) {
+      return res.status(403).json({ error: 'You do not have permission to delete this post' });
+    }
+
+    const media_url = result[0].media_url; // Get the media_url from the result
+
+    // Delete associated likes
+    const deleteLikeQuery = 'DELETE FROM likes WHERE post_id = ?';
+    database.query(deleteLikeQuery, [post_id], (likeErr) => {
+      if (likeErr) {
+        console.error('Error deleting likes of post:', likeErr);
+        return res.status(500).json({ error: 'Error deleting likes of post' });
+      }
+
+      // Delete associated comments
+      const deleteCommentQuery = 'DELETE FROM comments WHERE post_id = ?';
+      database.query(deleteCommentQuery, [post_id], (commentErr) => {
+        if (commentErr) {
+          console.error('Error deleting comments of post:', commentErr);
+          return res.status(500).json({ error: 'Error deleting comments of post' });
+        }
+
+        // Delete the post
+        const deletePostQuery = 'DELETE FROM posts WHERE id = ?';
+        database.query(deletePostQuery, [post_id], (deleteErr) => {
+          if (deleteErr) {
+            console.error('Error deleting post:', deleteErr);
+            return res.status(500).json({ error: 'Error deleting post' });
+          }
+
+          // Delete the associated media file
+          if (media_url) {
+            const filePath = path.join(__dirname, media_url); // Construct the full file path
+            fs.unlink(filePath, (fileErr) => {
+              if (fileErr) {
+                console.error('Error deleting media file:', fileErr);
+                return res.status(500).json({ error: 'Error deleting media file' });
+              }
+
+              console.log('Media file deleted successfully');
+              console.log('Post deleted successfully');
+              return res.status(200).json({ message: 'Post deleted successfully' });
+            });
+          } else {
+            console.log('Post deleted successfully (no media file to delete)');
+            return res.status(200).json({ message: 'Post deleted successfully' });
+          }
+        });
+      });
+    });
+  });
+});
+
+
+
 // saved_posts table:
 // user_id, post_id, saved_at
 app.post('/saved_posts', authenticateToken, (req, res) => {
