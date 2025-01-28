@@ -5,6 +5,7 @@ import { Link } from "react-router";
 import FollowCount from "../components/FollowCount";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import LogoutButton from "../components/LogoutButton";
 const PersonalProfilePage = () => {
   const [loggedUser, setLoggedUser] = useState(null);
   const [error, setError] = useState("");
@@ -49,9 +50,10 @@ const PersonalProfilePage = () => {
         {/* Profile Header */}
         <div className="flex justify-between items-center mb-6">
           <PersonalProfile />
-          <button className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors">
+          {/* <button className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors">
             Logout
-          </button>
+          </button> */}
+          <LogoutButton />
         </div>
 
         {/* Follow Count and Edit Profile */}

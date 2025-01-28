@@ -14,6 +14,7 @@ const Media = () => {
     <div className="flex justify-center overflow-auto">
       <div className="p-3 min-w-full no-scrollbar::-webkit-scrollbar">
         {/* {error && <p className="text-red-500">{error}</p>} */}
+        
         <UserProfilePosts onPostsFetched={handlePostsFetched} />
         <ul>
           {media.map((post) => (

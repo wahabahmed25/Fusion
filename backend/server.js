@@ -280,6 +280,50 @@ app.get('/user-posts', authenticateToken, (req, res) => {
     });
 });
 
+app.get('/posts-of-user/:user_id', authenticateToken, (req, res) => {
+    const userId = req.params.user_id;
+    const specificUserPostsQuery = `
+    SELECT 
+        posts.id AS post_id, 
+        posts.media_url, 
+        posts.description, 
+        posts.created_at, 
+        users.id AS user_id, 
+        users.username, 
+        users.full_name, 
+        user_profiles.profile_pic 
+    FROM 
+        posts
+    INNER JOIN 
+        users ON posts.user_id = users.id
+    INNER JOIN 
+        user_profiles ON posts.user_id = user_profiles.user_id
+    WHERE 
+        posts.user_id = ? 
+    ORDER BY 
+        posts.created_at DESC
+`;
+    database.query(query, [userId], (err, results) => {
+        if (err) {
+            console.error("Error fetching this users posts: ", err);
+            return res.status(500).json({ error: "Failed to fetch this users posts" });
+        }
+        const formattedPost = results.map(post => ({
+            post_id: post.post_id,
+            media_url: post.media_url,
+            description: post.description,
+            created_at: post.created_at,
+            user: {
+                id: post.user_id,
+                username: post.username,
+                name: post.full_name,
+                profile_pic: post.profile_pic,
+            },
+        }))
+        res.status(200).json(formattedPosts);
+    })
+})
+
 
 app.post("/user_profiles", async (req, res) => {
     const userId = req.user.id;
@@ -677,32 +721,7 @@ app.get('/saved_posts', authenticateToken, (req, res) => {
 //             sp.user_id = ?;
 //     `;
 
-//     database.query(query, [userId], (err, result) => {
-//         if (err) {
-//             console.error('Error fetching saved posts', err);
-//             return res.status(500).json({ error: 'Error fetching saved posts' });
-//         }
 
-//         // If no saved posts, send an empty array
-//         if (result.length === 0) {
-//             return res.json([]);
-//         }
-
-//         // Return all saved posts
-//         const savedPosts = result.map(post => ({
-//             post_id: post.post_id,
-//             description: post.description,
-//             media_url: post.media_url,
-//             user: {
-//                 full_name: post.full_name,
-//                 username: post.username,
-//                 profile_pic: post.profile_pic,
-//             },
-//         }));
-
-//         return res.json(savedPosts);
-//     });
-// });
 
 //like count
 //id user_id post_id

@@ -4,7 +4,7 @@ import LikeButton from "./LikeButton";
 import CommentSection from "./CommentSection";
 import SavePosts from "./SavePosts";
 import EditPosts from "./EditPosts";
-
+import { Link } from "react-router";
 const PostCard = ({
   media_url,
   description,
@@ -16,13 +16,13 @@ const PostCard = ({
   const handleEditSuccess = () => {
     console.log("post updated, refresh");
   };
-
+  
   return (
     <div className="bg-white shadow-lg rounded-lg p-4 max-w-md mx-auto my-4">
       {/* User Profile and Edit Section */}
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center mb-2">
         {user && (
-          <div className="flex items-center">
+          <Link to = "/userProfilePage"className="flex items-center hover:bg-gray-300 rounded-lg hover:cursor-pointer px-2 py-1">
             <img
               src={user.profile_pic || defaultProfile}
               alt="null"
@@ -32,7 +32,7 @@ const PostCard = ({
               <p className="text-sm font-bold lowercase">@{user.username || "Unknown"}</p>
               <p className="text-xs text-gray-600 uppercase">{user.name || user.full_name || "Anonymous"}</p>
             </div>
-          </div>
+          </Link>
         )}
 
         {/* Edit button positioned on the top right */}
@@ -45,7 +45,7 @@ const PostCard = ({
       </div>
 
       {/* Post Description */}
-      <div className="mt-4">
+      <div className="">
         <h3 className="text-md px-1 pb-2 text-gray-800">{description}</h3>
       </div>
 

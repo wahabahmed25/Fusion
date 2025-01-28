@@ -112,3 +112,17 @@ delete post:
 onclick send a post requesnt and delete all columns of that post
 
 
+whats left:
+
+- public user profile: profile, follows, their posts and message
+- real time messaging between 2 people
+- edit profile (users_settings), change username, password, name, email?, profile pic and delete account
+- activity log? (prob not)
+- friend requests? (prob not)
+- search bar
+- display followers/following users profiles in page (personal and public)
+
+the single user profile,
+
+get posts based on that user_id, not all posts
+with that user_id get user profile

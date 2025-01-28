@@ -45,7 +45,7 @@ const UserProfilePosts = ({ onPostsFetched }) => {
 
   return (
     <div className="">
-
+      
     </div>
   );
 };

@@ -6,6 +6,7 @@ import HomePage from "./pages/HomePage"
 import SavedPage from "./pages/SavedPage"
 import PersonalProfilePage from "./pages/PersonalProfilePage";
 // import { Link } from "react-router-dom";
+import UserProfilePage from "./pages/UserProfilePage";
 const App = () => {
 
   return (
@@ -19,6 +20,7 @@ const App = () => {
 
 
       <Routes>
+        <Route path = "/userProfilePage" element = {<UserProfilePage />} />
         <Route path = "/personalProfilePage" element = {<PersonalProfilePage />} />
         <Route path = "/saved" element = {<SavedPage />} />
         <Route path="/signup" element={<SignUpPage />} />
