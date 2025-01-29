@@ -22,7 +22,7 @@ const PostCard = ({
       {/* User Profile and Edit Section */}
       <div className="flex justify-between items-center mb-2">
         {user && (
-          <Link to = "/userProfilePage"className="flex items-center hover:bg-gray-300 rounded-lg hover:cursor-pointer px-2 py-1">
+          <Link to = {`/userProfilePage/${user.user_id}`} className="flex items-center hover:bg-gray-300 rounded-lg hover:cursor-pointer px-2 py-1">
             <img
               src={user.profile_pic || defaultProfile}
               alt="null"
@@ -77,11 +77,11 @@ PostCard.propTypes = {
   description: PropTypes.string.isRequired,
   post_id: PropTypes.number.isRequired,
   user: PropTypes.shape({
+    user_id: PropTypes.number.isRequired, 
     profile_pic: PropTypes.string,
     username: PropTypes.string,
     name: PropTypes.string,
     full_name: PropTypes.string,
   }),
-};
-
+}
 export default PostCard;

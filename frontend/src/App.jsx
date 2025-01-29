@@ -20,7 +20,7 @@ const App = () => {
 
 
       <Routes>
-        <Route path = "/userProfilePage" element = {<UserProfilePage />} />
+        <Route path = "/userProfilePage/:user_id" element = {<UserProfilePage />} />
         <Route path = "/personalProfilePage" element = {<PersonalProfilePage />} />
         <Route path = "/saved" element = {<SavedPage />} />
         <Route path="/signup" element={<SignUpPage />} />

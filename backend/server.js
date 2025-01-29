@@ -145,7 +145,18 @@ const getUserProfiles = (userIds) => {
       });
   });
   
+  app.get('/users/:user_id', (req, res) => {
+    const userId = req.params.id;
   
+    getUserById(userId)
+      .then((user) => {
+        res.json(user); // Return the user data as JSON
+      })
+      .catch((err) => {
+        console.error(err);
+        res.status(404).json({ message: "User not found" });
+      });
+  });
 
 
 const authenticateToken = (req, res, next) => {
