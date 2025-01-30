@@ -1,5 +1,5 @@
 // import { useEffect, useState } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/HomePage"
@@ -20,6 +20,7 @@ const App = () => {
 
 
       <Routes>
+        <Route path="/" element = {<Navigate to="/login" replace />}/>
         <Route path = "/userProfilePage/:user_id" element = {<UserProfilePage />} />
         <Route path = "/personalProfilePage" element = {<PersonalProfilePage />} />
         <Route path = "/saved" element = {<SavedPage />} />

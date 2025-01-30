@@ -51,7 +51,7 @@ const UserProfilePosts = ({ onPostsFetched }) => {
 };
 
 UserProfilePosts.propTypes = {
-  onPostsFetched: PropTypes.func.isRequired,
+  onPostsFetched: PropTypes.func,
 };
 
 export default UserProfilePosts;

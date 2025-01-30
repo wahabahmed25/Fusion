@@ -192,6 +192,60 @@ app.get('/user_profiles',authenticateToken,  (req, res) => {
     });
 });
 
+app.get('/isFollowing/:user_id', authenticateToken, (req, res) => {
+    const followeeUserId = req.params.user_id; // The user_id of the profile being checked
+    const followerUserId = req.user.id; // The user_id of the currently authenticated user
+
+    const sql = `
+        SELECT EXISTS(
+            SELECT 1 
+            FROM followers 
+            WHERE follower_user_id = ? AND following_user_id = ?
+        ) AS is_following;
+    `;
+
+    // Pass followerUserId and followeeUserId as parameters
+database.query(sql, [followerUserId, followeeUserId], (err, data) => {
+    if (err) {
+        console.error("Error checking follow status:", err);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+    console.log("Follow status:", data[0]); // Log the result
+    return res.json(data[0]); // Return the result
+    });
+});
+
+app.get('/user_profiles/:user_id',authenticateToken,  (req, res) => {
+    const userId = req.params.user_id;
+    // const followerUserId = req.user.id;
+    const sql = `
+        SELECT 
+            user_profiles.profile_pic, 
+            users.username, 
+            users.full_name
+        FROM 
+            user_profiles
+        JOIN 
+            users 
+        ON 
+            user_profiles.user_id = users.id
+        WHERE 
+            user_profiles.user_id = ?;
+    `;
+    database.query(sql, [userId], (err, data) => {
+        if (err) {
+            console.error("Error fetching data:", err);
+            return res.json(err);
+        }
+        if(data.length === 0){
+            return res.status(404).json({ message: "Profile not found" });
+        }
+        console.log("Fetched data:", data);  // Log the data to see if it's being fetched
+        return res.json(data[0]);
+    });
+});
+
+
 
 //personal dash board
 app.get('/personal-posts', authenticateToken, (req, res) => {
@@ -302,7 +356,7 @@ app.get('/posts-of-user/:user_id', authenticateToken, (req, res) => {
         users.id AS user_id, 
         users.username, 
         users.full_name, 
-        user_profiles.profile_pic 
+        user_profiles.profile_pic
     FROM 
         posts
     INNER JOIN 
@@ -314,7 +368,7 @@ app.get('/posts-of-user/:user_id', authenticateToken, (req, res) => {
     ORDER BY 
         posts.created_at DESC
 `;
-    database.query(query, [userId], (err, results) => {
+    database.query(specificUserPostsQuery, [userId], (err, results) => {
         if (err) {
             console.error("Error fetching this users posts: ", err);
             return res.status(500).json({ error: "Failed to fetch this users posts" });
@@ -331,7 +385,7 @@ app.get('/posts-of-user/:user_id', authenticateToken, (req, res) => {
                 profile_pic: post.profile_pic,
             },
         }))
-        res.status(200).json(formattedPosts);
+        res.status(200).json(formattedPost);
     })
 })
 
@@ -580,6 +634,8 @@ app.post('/follow-user', authenticateToken, (req, res) => {
         });
     }
 });
+
+
 
 // Example endpoint to fetch counts
 app.get('/follow-counts/:user_id', (req, res) => {
