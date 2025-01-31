@@ -113,7 +113,7 @@ onclick send a post requesnt and delete all columns of that post
 
 
 whats left (MUST):
-
+`- add bio to personal and user profile page
 - real time messaging between 2 people
 - edit profile (users_settings), change username, password, name, email?, profile pic and delete account
 - search bar
@@ -122,7 +122,7 @@ whats left (MUST):
 
 addition features (optional):
 - notification system, group chat,
-- settings page, (activity log, other features etc)
+- settings page, (activity log, change passwords, other features etc)
 - tags posts tags,
 - friend requests,
 - option for account to be private

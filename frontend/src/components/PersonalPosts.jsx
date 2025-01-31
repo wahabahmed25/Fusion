@@ -38,6 +38,7 @@ const PersonalPosts = () => {
       <div className="grid grid-cols-2 gap-4">
         {myPosts.map((post) => (
           <div key={post.post_id} className="w-full">
+            
             <PostCard
               media_url={post.media_url}
               description={post.description}

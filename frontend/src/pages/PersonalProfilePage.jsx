@@ -6,6 +6,8 @@ import FollowCount from "../components/FollowCount";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import LogoutButton from "../components/LogoutButton";
+import EditProfile from "../components/EditProfile";
+
 const PersonalProfilePage = () => {
   const [loggedUser, setLoggedUser] = useState(null);
   const [error, setError] = useState("");
@@ -59,9 +61,10 @@ const PersonalProfilePage = () => {
         {/* Follow Count and Edit Profile */}
         <div className="flex justify-between items-center mb-6">
           <FollowCount user_id={loggedUser} />
-          <button className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors">
+          {/* <button className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors">
             Edit Profile
-          </button>
+          </button> */}
+          <EditProfile />
         </div>
 
         {/* Posts Section */}

@@ -434,6 +434,30 @@ app.post('/posts', authenticateToken, upload.single("image"), (req, res) => {
     })
 })
 
+app.put('/change-profile', authenticateToken, (req, res) => {
+    const userId = req.user.id;
+    const { full_name, username, bio, profile_pic } = req.body;
+    const query = `
+        UPDATE users 
+        SET full_name = ?, username = ? 
+        WHERE id = ?;
+        UPDATE users_profile 
+        SET bio = ?, profile_pic = ? 
+        WHERE user_id = ?;
+    `;
+    const values = [full_name, username, userId, bio, profile_pic, userId]
+
+    database.query(query, values, (error, result) => {
+        if(error){
+            console.error("error editing profile", error);
+            return result.status(500).json({ error: "Failed to edit profile" });
+        }
+        console.log("changes to profile successfully made");
+        return res.status(201).json({ message: "changed to profile sucessfully made" });
+
+    })
+})
+
 app.put('/posts/:post_id', authenticateToken, upload.single("image"), (req, res) => {
     const userId = req.user.id;
     const post_id = req.params.post_id;

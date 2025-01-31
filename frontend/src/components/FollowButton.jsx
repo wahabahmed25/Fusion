@@ -2,7 +2,7 @@ import axios from "axios";
 import { useState } from "react";
 import PropTypes from "prop-types";
 
-const FollowButton = ({ targetUserId, isFollowing }) => {
+const FollowButton = ({ targetUserId, isFollowing, className = "" }) => {
   const [following, setfollowing] = useState(isFollowing);
   const [error, setError] = useState("");
   const handleClick = async (e) => {
@@ -14,12 +14,16 @@ const FollowButton = ({ targetUserId, isFollowing }) => {
       return;
     }
     try {
-        const action = following ? "unfollow" : "follow";
-      const response = await axios.post("http://localhost:8081/follow-user", {targetUserId, action}, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const action = following ? "unfollow" : "follow";
+      const response = await axios.post(
+        "http://localhost:8081/follow-user",
+        { targetUserId, action },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       console.log(response.data);
       setfollowing(!following);
     } catch (error) {
@@ -31,14 +35,20 @@ const FollowButton = ({ targetUserId, isFollowing }) => {
   return (
     <div>
       {error && <p className="text-red-500">{error}</p>}
-      <button className="bg-blue-300 mt-2 py-1 px-2 rounded-md text-sm" onClick={handleClick}>{following ? "unfollow" : "Follow"}</button>
+      <button
+        className={`bg-blue-300 mt-2 py-1 px-2 rounded-md text-sm ${className}`}
+        onClick={handleClick}
+      >
+        {following ? "unfollow" : "Follow"}
+      </button>
     </div>
   );
 };
 
 FollowButton.propTypes = {
-    targetUserId: PropTypes.number.isRequired,
-    isFollowing: PropTypes.bool.isRequired,
-}
+  targetUserId: PropTypes.number.isRequired,
+  isFollowing: PropTypes.bool.isRequired,
+  className: PropTypes.string,
+};
 
 export default FollowButton;
