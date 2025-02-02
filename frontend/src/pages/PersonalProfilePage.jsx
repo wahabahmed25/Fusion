@@ -9,6 +9,7 @@ import LogoutButton from "../components/LogoutButton";
 import EditProfile from "../components/EditProfile";
 
 const PersonalProfilePage = () => {
+    const[personalData, setPersonalData] = useState([])
   const [loggedUser, setLoggedUser] = useState(null);
   const [error, setError] = useState("");
   const fetchUserId = async () => {
@@ -23,9 +24,10 @@ const PersonalProfilePage = () => {
           "Content-Type": "application/json",
         },
       });
-      console.log(response.data);
+      console.log("personalprofilepage data: ", response.data);
       const userData = response.data;
       setLoggedUser(userData.user_id);
+      setPersonalData(userData);
     } catch (err) {
       console.error(err);
       setError("error fetching user profile");
@@ -64,14 +66,19 @@ const PersonalProfilePage = () => {
           {/* <button className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors">
             Edit Profile
           </button> */}
-          <EditProfile />
+          <EditProfile 
+            initialBio={personalData.bio} 
+            initialName={personalData.full_name}
+            initialProfilePic={personalData.profile_pic}
+            initialUsername={personalData.username}
+            
+            />
         </div>
 
         {/* Posts Section */}
         <div className="mt-8">
           {/* <h2 className="text-2xl font-bold text-white mb-4">Posts</h2> */}
           <PersonalPosts />
-          
         </div>
       </div>
     </div>

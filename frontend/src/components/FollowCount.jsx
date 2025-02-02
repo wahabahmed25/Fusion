@@ -57,7 +57,7 @@ const FollowCount = ({ user_id }) => {
   );
 };
 FollowCount.propTypes = {
-  user_id: PropTypes.number.isRequired,
+  user_id: PropTypes.number,
 };
 
 export default FollowCount;

@@ -176,21 +176,35 @@ const authenticateToken = (req, res, next) => {
 
 }
 
-app.get('/user_profiles',authenticateToken,  (req, res) => {
-    const userId = req.user.id
-    const sql = "SELECT * FROM user_profiles WHERE user_id = ?";
+app.get('/user_profiles', authenticateToken, (req, res) => {
+    const userId = req.user.id; 
+    const sql = `
+        SELECT 
+            users.id AS user_id, 
+            users.username, 
+            users.full_name, 
+            user_profiles.user_id, 
+            user_profiles.profile_pic, 
+            user_profiles.bio
+        FROM user_profiles
+        INNER JOIN users ON user_profiles.user_id = users.id
+        WHERE user_profiles.user_id = ?;
+
+    `;
+
     database.query(sql, [userId], (err, data) => {
         if (err) {
             console.error("Error fetching data:", err);
-            return res.json(err);
+            return res.status(500).json({ error: "Internal Server Error" });
         }
-        if(data.length === 0){
+        if (data.length === 0) {
             return res.status(404).json({ message: "Profile not found" });
         }
-        console.log("Fetched data:", data);  // Log the data to see if it's being fetched
-        return res.json(data[0]);
+        console.log("Fetched data:", data[0]); // Logging only the first result
+        return res.json(data[0]); 
     });
 });
+
 
 app.get('/isFollowing/:user_id', authenticateToken, (req, res) => {
     const followeeUserId = req.params.user_id; // The user_id of the profile being checked
@@ -434,9 +448,10 @@ app.post('/posts', authenticateToken, upload.single("image"), (req, res) => {
     })
 })
 
-app.put('/change-profile', authenticateToken, (req, res) => {
+app.put('/change-profile', authenticateToken, upload.single('image'), (req, res) => {
     const userId = req.user.id;
-    const { full_name, username, bio, profile_pic } = req.body;
+    const { full_name, username, bio} = req.body;
+    const profile_pic = req.file?.path;
     const query = `
         UPDATE users 
         SET full_name = ?, username = ? 
@@ -457,6 +472,27 @@ app.put('/change-profile', authenticateToken, (req, res) => {
 
     })
 })
+
+app.post('/upload-profile', upload.single('profile_pic'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    const filePath = `/uploads/${req.file.filename}`; // Store the full path
+
+    // Example database query (assuming you have `user_id`)
+    const userId = req.body.user_id;
+    const sql = "UPDATE users SET profile_pic = ? WHERE user_id = ?";
+    
+    db.query(sql, [filePath, userId], (err, result) => {
+        if (err) {
+            console.error("Database error:", err);
+            return res.status(500).json({ error: "Database update failed" });
+        }
+        res.json({ message: "Profile picture updated", profile_pic: filePath });
+    });
+});
+
 
 app.put('/posts/:post_id', authenticateToken, upload.single("image"), (req, res) => {
     const userId = req.user.id;
