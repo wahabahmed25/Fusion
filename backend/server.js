@@ -448,50 +448,49 @@ app.post('/posts', authenticateToken, upload.single("image"), (req, res) => {
     })
 })
 
-app.put('/change-profile', authenticateToken, upload.single('image'), (req, res) => {
+app.put('/change-profile', authenticateToken, upload.single('profile_pic'), (req, res) => {
     const userId = req.user.id;
-    const { full_name, username, bio} = req.body;
-    const profile_pic = req.file?.path;
-    const query = `
-        UPDATE users 
-        SET full_name = ?, username = ? 
-        WHERE id = ?;
-        UPDATE users_profile 
-        SET bio = ?, profile_pic = ? 
-        WHERE user_id = ?;
-    `;
-    const values = [full_name, username, userId, bio, profile_pic, userId]
+    const { full_name, username, bio } = req.body;
+    const profile_pic = req.file ? path.join('/uploads', req.file.filename) : null;
 
-    database.query(query, values, (error, result) => {
-        if(error){
-            console.error("error editing profile", error);
-            return result.status(500).json({ error: "Failed to edit profile" });
+    // Update users table
+    const userQuery = `UPDATE users SET full_name = ?, username = ? WHERE id = ?`;
+    const userValues = [full_name, username, userId];
+
+    database.query(userQuery, userValues, (userError) => {
+        if (userError) {
+            console.error("Error updating user info:", userError);
+            return res.status(500).json({ error: "Failed to update user info" });
         }
-        console.log("changes to profile successfully made");
-        return res.status(201).json({ message: "changed to profile sucessfully made" });
 
-    })
-})
+        // Update user_profiles table
+        const profileQuery = `UPDATE user_profiles SET bio = ?, profile_pic = COALESCE(?, profile_pic) WHERE user_id = ?`;
+        const profileValues = [bio, profile_pic, userId];
 
-app.post('/upload-profile', upload.single('profile_pic'), (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({ error: "No file uploaded" });
-    }
+        database.query(profileQuery, profileValues, (profileError) => {
+            if (profileError) {
+                console.error("Error updating profile:", profileError);
+                return res.status(500).json({ error: "Failed to update profile" });
+            }
 
-    const filePath = `/uploads/${req.file.filename}`; // Store the full path
-
-    // Example database query (assuming you have `user_id`)
-    const userId = req.body.user_id;
-    const sql = "UPDATE users SET profile_pic = ? WHERE user_id = ?";
-    
-    db.query(sql, [filePath, userId], (err, result) => {
-        if (err) {
-            console.error("Database error:", err);
-            return res.status(500).json({ error: "Database update failed" });
-        }
-        res.json({ message: "Profile picture updated", profile_pic: filePath });
+            return res.status(200).json({ message: "Profile successfully updated", profile_pic });
+        });
     });
 });
+
+app.put('/remove-profile-pic', authenticateToken, (req, res) => {
+    const userId = req.user.id;
+    const deleteQuery = "UPDATE user_profiles SET profile_pic = '/default-profile.svg' WHERE user_id = ?";
+
+    database.query(deleteQuery, [userId], (err, result) => {
+        if(err){
+            console.error("Error removing profile pic:", err);
+            return res.status(500).json({ error: "Failed to remove profile pic" });
+        }
+    })
+    console.log("Profile pic set to default successfully");
+    return res.status(200).json({ message: "Profile pic successfully removed" });
+})
 
 
 app.put('/posts/:post_id', authenticateToken, upload.single("image"), (req, res) => {
@@ -1070,11 +1069,12 @@ app.post('/signup', (req, res) => {
 
         const userId = userResult.insertId; // Get the inserted user's ID
 
-        // SQL query to insert a new profile
-        const profileSql = `INSERT INTO user_profiles (user_id, profile_pic, cover_photo, bio, website_url) VALUES (?, NULL, NULL, NULL, NULL)`;
+        // Insert default profile for the new user with profile_pic set to '/default-profile.svg'
+        const profileSql = `
+            INSERT INTO user_profiles (user_id, profile_pic, cover_photo, bio, website_url) 
+            VALUES (?, '/default-profile.svg', NULL, NULL, NULL)`;
         const profileValues = [userId];
 
-        // Insert default profile for the new user
         database.query(profileSql, profileValues, (profileErr, profileResult) => {
             if (profileErr) {
                 console.error("Error inserting user profile:", profileErr);
@@ -1086,6 +1086,7 @@ app.post('/signup', (req, res) => {
         });
     });
 });
+
 
 
 

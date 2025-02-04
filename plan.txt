@@ -136,3 +136,11 @@ get posts based on that user_id, not all posts
 with that user_id get user profile
 
 user_settings: id, user_id, setting_name, setting_value
+
+
+fix:
+profile pic for comments, specific user page
+suggested feed, onclick bring to specific user page
+make edit profile picture much better
+valid input field rules on edit profile
+show bio on personal and specific user page.

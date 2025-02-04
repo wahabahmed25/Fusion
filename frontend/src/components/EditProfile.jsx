@@ -25,6 +25,40 @@ const EditProfile = ({
     setProfilePreview(initialProfilePic); // Update profilePreview when initialProfilePic changes
   }, [initialProfilePic]);
 
+  useEffect(() => {
+    setProfileValue({
+      full_name: initialName,
+      username: initialUsername,
+      bio: initialBio,
+    });
+  }, [initialName, initialBio, initialUsername]);
+  const handleRemovePic = async (e) => {
+    e.preventDefault();
+
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      console.error("error authorizing");
+      setError("error authorizing");
+      return;
+    }
+    try {
+      const response = await axios.put(
+        "http://localhost:8081/remove-profile-pic", {}, 
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setProfilePic(null);
+      setProfilePreview("/default-profile.svg");
+      console.log(response.data);
+      alert(response.data.message);
+    } catch (err) {
+      console.error("error removing profile pic", err);
+      setError("error removing profile pic");
+    }
+  };
   const handleChange = (e) => {
     const { name, value } = e.target;
     setProfileValue((prevValue) => ({ ...prevValue, [name]: value }));
@@ -32,7 +66,20 @@ const EditProfile = ({
 
   const handleProfilePic = (e) => {
     const file = e.target.files[0];
-    setProfilePic(file);
+    if (file) {
+      setProfilePic(file);
+      setProfilePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleEditClick = () => {
+    setProfileValue({
+      full_name: initialName,
+      username: initialUsername,
+      bio: initialBio,
+    });
+    setProfilePreview(initialProfilePic);
+    setEditing(true);
   };
 
   const handleSaveChanges = async (e) => {
@@ -46,7 +93,7 @@ const EditProfile = ({
     formData.append("full_name", profileValue.full_name);
     formData.append("username", profileValue.username);
     formData.append("bio", profileValue.bio);
-    if (profilePic) {
+    if (profilePic && profilePic !== "default-profile.svg") {
       formData.append("profile_pic", profilePic);
     }
 
@@ -78,7 +125,7 @@ const EditProfile = ({
     <div className="p-4">
       {error && <p className="text-red-500 text-sm">{error}</p>}
       <button
-        onClick={() => setEditing(true)}
+        onClick={handleEditClick}
         className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-300"
       >
         Edit Profile
@@ -99,8 +146,11 @@ const EditProfile = ({
             <div className="flex flex-col items-center">
               <img
                 src={
-                  profilePic ? URL.createObjectURL(profilePic) : profilePreview
+                  profilePic
+                    ? URL.createObjectURL(profilePic)
+                    : profilePreview || "default-profile.svg"
                 }
+                // src={profilePreview}
                 alt="Profile Preview"
                 className="w-24 h-24 rounded-full object-cover border-2 border-gray-300"
               />
@@ -119,7 +169,10 @@ const EditProfile = ({
                 </label>
 
                 {/* Remove Picture Button (Right) */}
-                <button className="bg-red-500 text-white text-sm px-4 py-2 rounded-md hover:bg-red-600 transition w-1/2">
+                <button
+                  onClick={handleRemovePic}
+                  className="bg-red-500 text-white text-sm px-4 py-2 rounded-md hover:bg-red-600 transition w-1/2"
+                >
                   Remove Picture
                 </button>
               </div>

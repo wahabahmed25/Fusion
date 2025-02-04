@@ -1,37 +1,43 @@
 import PropTypes from "prop-types";
-import defaultProfile from "../icons/default-profile.svg";
+// import defaultProfile from "../icons/default-profile.svg";
 import LikeButton from "./LikeButton";
 import CommentSection from "./CommentSection";
 import SavePosts from "./SavePosts";
 import EditPosts from "./EditPosts";
 import { Link } from "react-router-dom";
-const PostCard = ({
-  media_url,
-  description,
-  post_id,
-  user,
-}) => {
+const PostCard = ({ media_url, description, post_id, user }) => {
   console.log("User object in PostCard:", user);
   const imageUrl = `http://localhost:8081/${media_url}`;
 
   const handleEditSuccess = () => {
     console.log("post updated, refresh");
   };
-  
+
   return (
     <div className="bg-white shadow-lg rounded-lg p-4 max-w-md mx-auto my-4">
       {/* User Profile and Edit Section */}
       <div className="flex justify-between items-center mb-2">
         {user && (
-          <Link to = {`/userProfilePage/${user.id}`} className="flex items-center hover:bg-gray-300 rounded-lg hover:cursor-pointer px-2 py-1">
+          <Link
+            to={`/userProfilePage/${user.id}`}
+            className="flex items-center hover:bg-gray-300 rounded-lg hover:cursor-pointer px-2 py-1"
+          >
             <img
-              src={user.profile_pic || defaultProfile}
+              src={
+                user.profile_pic
+                  ? `http://localhost:8081${user.profile_pic}`
+                  : "/default-profile.svg"
+              }
               alt="null"
               className="w-10 h-10 rounded-full mr-3"
             />
             <div>
-              <p className="text-sm font-bold lowercase">@{user.username || "Unknown"}</p>
-              <p className="text-xs text-gray-600 uppercase">{user.name || user.full_name || "Anonymous"}</p>
+              <p className="text-sm font-bold lowercase">
+                @{user.username || "Unknown"}
+              </p>
+              <p className="text-xs text-gray-600 uppercase">
+                {user.name || user.full_name || "Anonymous"}
+              </p>
             </div>
           </Link>
         )}
@@ -78,12 +84,12 @@ PostCard.propTypes = {
   description: PropTypes.string.isRequired,
   post_id: PropTypes.number.isRequired,
   user: PropTypes.shape({
-    // user_id: PropTypes.number.isRequired, 
-    id: PropTypes.number.isRequired, 
+    // user_id: PropTypes.number.isRequired,
+    id: PropTypes.number.isRequired,
     profile_pic: PropTypes.string,
     username: PropTypes.string,
     name: PropTypes.string,
     full_name: PropTypes.string,
   }),
-}
+};
 export default PostCard;

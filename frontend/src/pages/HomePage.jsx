@@ -1,6 +1,6 @@
 import Navbar from "../components/Navbar"
 // import { Link } from "react-router"
-// import SuggestedUsers from "../components/SuggestedUserProfile"
+import SuggestedUsers from "../components/SuggestedUserProfile"
 // import CreatePost from "../components/CreatePost"
 // import Test from "../components/Test"
 import Media from "../components/Media"
@@ -11,7 +11,7 @@ const Home = () => {
       <Navbar />
       {/* <Test /> */}
       <Media />
-      {/* <SuggestedUsers /> */}
+      <SuggestedUsers />
 
 
 

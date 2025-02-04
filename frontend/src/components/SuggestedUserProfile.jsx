@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 // import { extractFirstName } from "./SigninValidation";
-import defaultProfile from "../icons/default-profile.svg";
+// import defaultProfile from "../icons/default-profile.svg";
 // import { useResolvedPath } from "react-router";
 import FollowButton from "./FollowButton";
 const SuggestedUserProfile = () => {
@@ -9,7 +9,7 @@ const SuggestedUserProfile = () => {
 
   const getRandomUser = (users, count) => {
     return users.sort(() => 0.5 - Math.random()).slice(0, count);
-  }
+  };
 
   const fetchSuggestedUsers = async () => {
     const token = localStorage.getItem("authToken");
@@ -34,7 +34,6 @@ const SuggestedUserProfile = () => {
       const suggestedUserData = await response.json();
       console.log("Fetched suggested user profiles: ", suggestedUserData);
       setUserProfiles(getRandomUser(suggestedUserData, 8));
-              
     } catch (err) {
       setError(err.message);
     }
@@ -58,18 +57,29 @@ const SuggestedUserProfile = () => {
             <p>No users to display.</p>
           ) : (
             userProfiles.map((profile, index) => (
-              <li key={index} className="flex items-center mb-4 hover:bg-gray-300 p-2 rounded-lg">
+              <li
+                key={index}
+                className="flex items-center mb-4 hover:bg-gray-300 p-2 rounded-lg"
+              >
                 <img
-                  src={profile.profile_pic || defaultProfile}
+                  src={
+                    !profile.profile_pic || profile.profile_pic === "/default-profile.svg"
+                      ? "/default-profile.svg"
+                      : `http://localhost:8081${profile.profile_pic}`
+                  }
                   alt="User Profile"
                   className="w-10 h-10 rounded-full mr-4"
                 />
+
                 <div>
                   <p className="text-sm font-semibold capitalize">
                     {profile.full_name}
                   </p>
                   <p className="text-xs text-gray-500">@{profile.username}</p>
-                  <FollowButton targetUserId={profile.user_id} isFollowing={profile.is_following}/>
+                  <FollowButton
+                    targetUserId={profile.user_id}
+                    isFollowing={profile.is_following}
+                  />
                 </div>
               </li>
             ))
@@ -78,6 +88,6 @@ const SuggestedUserProfile = () => {
       </div>
     </div>
   );
-}  
+};
 
 export default SuggestedUserProfile;

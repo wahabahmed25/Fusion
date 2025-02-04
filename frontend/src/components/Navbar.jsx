@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import YourProfile from "../components/PersonalProfile"
 import CreatePost from "./CreatePost";
 import { useState } from "react";
-import defaultProfile from "../icons/default-profile.svg"
 const Navbar = () => {
   const [showModal, setShowModal] = useState(false);
   const toggleModal = () => {
@@ -16,16 +15,8 @@ const Navbar = () => {
         </div>
         <YourProfile />
         
+      
         
-        <img 
-          src="/default-profile.svg"
-          alt="profile"
-        
-        />
-        <img 
-          src={defaultProfile}
-          className="w-4 h-4"
-        />
         {/* Navigation Links */}
         <div className="flex flex-col space-y-10 p-4 px-12 pb-10 w-full">
           <Link

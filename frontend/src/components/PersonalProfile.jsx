@@ -1,4 +1,4 @@
-import defaultProfile from "../icons/default-profile.svg"; // or adjust the relative path if needed
+// import defaultProfile from "../icons/default-profile.svg"; // or adjust the relative path if needed
 import { useEffect, useState } from "react";
 import { extractFirstName } from "./SigninValidation";
 import { Link } from "react-router";
@@ -48,7 +48,9 @@ const PersonalProfile = () => {
             .then((userData) => {
               console.log("User data: ", userData);
               setYourProfile({
-                profile_pic: profileData.profile_pic || defaultProfile,
+                // profile_pic: profileData.profile_pic || defaultProfile,
+
+                profile_pic: profileData.profile_pic,
                 username: userData.username || "No username",
                 name: extractFirstName(userData.full_name) || "No name",
               });
@@ -63,7 +65,11 @@ const PersonalProfile = () => {
       <Link to="/personalProfilePage">
         <div className="text-white p-2 px-6 rounded-lg shadow-lg w-42 text-center flex hover:bg-slate-800 hover:cursor-pointer">
           <img
-            src={yourProfile.profile_pic}
+            src={
+              !yourProfile.profile_pic || yourProfile.profile_pic === "/default-profile.svg"
+                ? "/default-profile.svg"
+                : `http://localhost:8081${yourProfile.profile_pic}`
+            }
             alt="loading..."
             className="w-24 h-24 rounded-full object-cover mr-4"
           />
