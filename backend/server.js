@@ -26,7 +26,7 @@ app.use(cors({
 }));
 
 app.use('/uploads', express.static('uploads'));
-
+app.use(express.static(path.join(__dirname, "public"))); 
 //socket.io
 io.on("connection", (socket) => {
     console.log("a user connected");
@@ -41,6 +41,7 @@ io.on("connection", (socket) => {
 })
 
 
+app.use('/public', express.static("public"));
 
 
 // After deleting the post
@@ -235,6 +236,7 @@ app.get('/user_profiles/:user_id',authenticateToken,  (req, res) => {
     const sql = `
         SELECT 
             user_profiles.profile_pic, 
+            user_profiles.bio,
             users.username, 
             users.full_name
         FROM 

@@ -8,6 +8,7 @@ const SpecificUserProfile = () => {
     username: "",
     full_name: "",
     profile_pic: "",
+    bio: "",
   });
   const { user_id } = useParams();
   const [error, setError] = useState("");
@@ -36,6 +37,7 @@ const SpecificUserProfile = () => {
           username: profileData.username || "No username",
           full_name: profileData.full_name || "No name",
           profile_pic: profileData.profile_pic,
+          bio: profileData.bio || "no bio"
         });
       
       console.log("Final Image Path:", userProfile.profile_pic);
@@ -57,7 +59,11 @@ const SpecificUserProfile = () => {
       {error && <p className="text-red-500">{error}</p>}
       <img
         
-        src={userProfile.profile_pic}
+        src={
+            userProfile.profile_pic
+              ? `http://localhost:8081${userProfile.profile_pic}`
+              : "http://localhost:8081/default-profile.svg"
+          }
         alt="Profile"
         className="w-32 h-32 rounded-full border-4 border-gray-200 mx-auto mb-4"
         onLoad={(e) => e.target.classList.remove("opacity-0")}
@@ -66,6 +72,12 @@ const SpecificUserProfile = () => {
         @{userProfile.username}
       </h2>
       <p className="text-white uppercase">{userProfile.full_name}</p>
+
+      {/* <h1>{userProfile.bio}</h1> */}
+      <div className="bg-gray-700 p-5 mt-4 rounded-lg shadow-lg border border-gray-600 text-center">
+          <h1 className="text-white text-lg font-bold mb-2">About Me</h1>
+          <h1 className="text-white text-md italic">{userProfile.bio}</h1>
+    </div>
     </div>
   );
 };

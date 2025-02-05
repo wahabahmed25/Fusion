@@ -84,7 +84,7 @@ const UserProfilePage = () => {
             </div>
           </div>
         </div>
-
+        
         <h1 className="text-white text-2xl font-bold text-center mt-8 mb-6">
           Posts
         </h1>

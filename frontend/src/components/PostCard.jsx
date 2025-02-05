@@ -23,10 +23,15 @@ const PostCard = ({ media_url, description, post_id, user }) => {
             className="flex items-center hover:bg-gray-300 rounded-lg hover:cursor-pointer px-2 py-1"
           >
             <img
+              // src={
+              //   user.profile_pic
+              //     ? `http://localhost:8081${user.profile_pic}`
+              //     : "/default-profile.svg"
+              // }
               src={
                 user.profile_pic
                   ? `http://localhost:8081${user.profile_pic}`
-                  : "/default-profile.svg"
+                  : "http://localhost:8081/default-profile.svg"
               }
               alt="null"
               className="w-10 h-10 rounded-full mr-3"

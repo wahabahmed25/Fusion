@@ -9,7 +9,7 @@ import LogoutButton from "../components/LogoutButton";
 import EditProfile from "../components/EditProfile";
 
 const PersonalProfilePage = () => {
-    const[personalData, setPersonalData] = useState([])
+  const [personalData, setPersonalData] = useState([]);
   const [loggedUser, setLoggedUser] = useState(null);
   const [error, setError] = useState("");
   const fetchUserId = async () => {
@@ -66,15 +66,18 @@ const PersonalProfilePage = () => {
           {/* <button className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors">
             Edit Profile
           </button> */}
-          <EditProfile 
-            initialBio={personalData.bio} 
+          <EditProfile
+            initialBio={personalData.bio}
             initialName={personalData.full_name}
             initialProfilePic={personalData.profile_pic}
             initialUsername={personalData.username}
-            
-            />
+          />
         </div>
-
+        {/* bio */}
+        <div className="bg-gray-700 p-5 rounded-lg shadow-lg border border-gray-600 text-center">
+          <h1 className="text-white text-lg font-bold mb-2">About Me</h1>
+          <h1 className="text-white text-md italic">{personalData.bio}</h1>
+        </div>
         {/* Posts Section */}
         <div className="mt-8">
           {/* <h2 className="text-2xl font-bold text-white mb-4">Posts</h2> */}
