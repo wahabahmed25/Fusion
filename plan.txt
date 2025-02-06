@@ -114,9 +114,7 @@ onclick send a post requesnt and delete all columns of that post
 
 whats left (MUST):
 - posts loading feature so it doesn't fetch all at once
-- add bio to personal and user profile page
 - real time messaging between 2 people
-- edit profile (users_settings), change username, password, name, email?, profile pic and delete account
 - search bar
 - display followers/following users profiles in page (personal and public)
 
@@ -144,3 +142,8 @@ suggested feed, onclick bring to specific user page
 make edit profile picture much better
 valid input field rules on edit profile
 show bio on personal and specific user page.
+
+
+search bar:
+
+when inputting, looks for username, and full_name

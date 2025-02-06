@@ -261,7 +261,31 @@ app.get('/user_profiles/:user_id',authenticateToken,  (req, res) => {
     });
 });
 
+app.get('/search-user', authenticateToken, (req, res) => {
+    const searchQuery = req.query.query; // Get the search input from query params
 
+    if (!searchQuery) {
+        return res.status(400).json({ error: "Search query is required" });
+    }
+
+    const query = `
+        SELECT users.id, users.full_name, users.username, user_profiles.profile_pic
+        FROM users
+        LEFT JOIN user_profiles ON users.id = user_profiles.user_id
+        WHERE users.full_name LIKE ? OR users.username LIKE ?
+    `;
+
+
+    const searchPattern = `%${searchQuery}%`; // Search for partial matches
+
+    database.query(query, [searchPattern, searchPattern], (err, results) => {
+        if (err) {
+            console.error("Error searching user", err);
+            return res.status(500).json({ error: "Failed to search user" });
+        }
+        res.json(results); // Send back user list
+    });
+});
 
 //personal dash board
 app.get('/personal-posts', authenticateToken, (req, res) => {

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import UserProfilePosts from "./UserProfilePosts";
 import PostCard from "./PostCard";
-
+import SearchBar from "./SearchBar";
 const Media = () => {
   const [media, setMedia] = useState([]);
   // const [error, setError] = useState("");
@@ -14,7 +14,7 @@ const Media = () => {
     <div className="flex justify-center overflow-auto">
       <div className="p-3 min-w-full no-scrollbar::-webkit-scrollbar">
         {/* {error && <p className="text-red-500">{error}</p>} */}
-        
+        <SearchBar />
         <UserProfilePosts onPostsFetched={handlePostsFetched} />
         <ul>
           {media.map((post) => (
