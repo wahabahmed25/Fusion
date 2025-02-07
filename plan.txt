@@ -115,7 +115,6 @@ onclick send a post requesnt and delete all columns of that post
 whats left (MUST):
 - posts loading feature so it doesn't fetch all at once
 - real time messaging between 2 people
-- search bar
 - display followers/following users profiles in page (personal and public)
 
 
@@ -124,6 +123,7 @@ addition features (optional):
 - settings page, (activity log, change passwords, change email other features etc)
 - tags posts tags,
 - friend requests,
+- display followers/following users profiles in page (personal and public)
 - option for account to be private
 - comments on comments and liking comments
 
@@ -137,11 +137,6 @@ user_settings: id, user_id, setting_name, setting_value
 
 
 fix:
-profile pic for comments, specific user page
-suggested feed, onclick bring to specific user page
-make edit profile picture much better
-valid input field rules on edit profile
-show bio on personal and specific user page.
 
 
 search bar:

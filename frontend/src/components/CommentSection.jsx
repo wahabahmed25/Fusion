@@ -1,6 +1,7 @@
 //where the comments show
 //get request (fetching comments)
-import defaultProfile from "../icons/default-profile.svg"; // or adjust the relative path if needed
+import { Link } from "react-router-dom";
+// import defaultProfile from "../icons/default-profile.svg"; // or adjust the relative path if needed
 import commentIcon from "../icons/comment-icon.svg";
 // import { Draggable } from "react-draggable";
 import { useState, useEffect } from "react";
@@ -109,23 +110,31 @@ const CommentSection = ({ post_id }) => {
                 comment.map((comments) => (
                   <div
                     key={comments.id}
-                    className="p-4 bg-gray-100 rounded-lg shadow-md"
+                    className="p-4 bg-gray-100 rounded-lg shadow-md hover:bg-gray-200"
                   >
-                    {/* Profile Pic and Full Name */}
-                    <div className="flex items-center gap-2">
-                      <img
-                        src={comments.profile_pic || defaultProfile} // Fallback to default if no profile pic
-                        alt={comments.full_name}
-                        className="w-8 h-8 rounded-full"
-                      />
-                      <p className="text-sm lowercase font-semibold text-gray-800">
-                        {comments.full_name || "anonamyz"}
+                    <Link to={`/userProfilePage/${comments.user_id}`}>
+                      {/* Profile Pic and Full Name */}
+                      <div className="flex items-center gap-2">
+                        <img
+                          src={
+                            comments.profile_pic
+                              ? `http://localhost:8081${comments.profile_pic}`
+                              : "http://localhost:8081/default-profile.svg"
+                          }
+                          alt={comments.full_name}
+                          className="w-8 h-8 rounded-full"
+                        />
+                        <p className="text-sm lowercase font-semibold text-gray-800">
+                          {comments.full_name || "anonamyz"}
+                        </p>
+                      </div>
+                      <p className="text-sm text-gray-700">
+                        {comments.comment}
                       </p>
-                    </div>
-                    <p className="text-sm text-gray-700">{comments.comment}</p>
-                    <p className="text-xs text-gray-500 mt-2">
-                      {new Date(comments.created_at).toLocaleString()}
-                    </p>
+                      <p className="text-xs text-gray-500 mt-2">
+                        {new Date(comments.created_at).toLocaleString()}
+                      </p>
+                    </Link>
                   </div>
                 ))
               ) : (

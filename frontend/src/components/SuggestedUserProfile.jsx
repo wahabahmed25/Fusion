@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
-// import { extractFirstName } from "./SigninValidation";
-// import defaultProfile from "../icons/default-profile.svg";
-// import { useResolvedPath } from "react-router";
 import FollowButton from "./FollowButton";
+import { Link } from "react-router-dom";
+
 const SuggestedUserProfile = () => {
   const [userProfiles, setUserProfiles] = useState([]);
   const [error, setError] = useState(null);
@@ -49,33 +48,31 @@ const SuggestedUserProfile = () => {
   }
 
   return (
-    <div className="absolute top-5 right-5 w-1/5">
-      <div className="text-gray-800 bg-gray-100 p-4 rounded-lg shadow-md">
-        <h2 className="text-lg font-semibold mb-4">Suggested</h2>
-        <ul>
+    <div className="absolute top-5 right-5 w-60"> 
+      <div className="text-gray-800 bg-gray-100 p-5 rounded-lg shadow-md w-full">
+        <h2 className="text-lg font-semibold mb-4 text-center">Suggested</h2>
+        <ul className="space-y-3">
           {userProfiles.length === 0 ? (
-            <p>No users to display.</p>
+            <p className="text-center">No users to display.</p>
           ) : (
             userProfiles.map((profile, index) => (
-              <li
-                key={index}
-                className="flex items-center mb-4 hover:bg-gray-300 p-2 rounded-lg"
-              >
-                <img
-                  src={
-                    !profile.profile_pic || profile.profile_pic === "/default-profile.svg"
-                      ? "/default-profile.svg"
-                      : `http://localhost:8081${profile.profile_pic}`
-                  }
-                  alt="User Profile"
-                  className="w-10 h-10 rounded-full mr-4"
-                />
-
-                <div>
-                  <p className="text-sm font-semibold capitalize">
-                    {profile.full_name}
-                  </p>
-                  <p className="text-xs text-gray-500">@{profile.username}</p>
+              <li key={index} className="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm hover:bg-gray-200 transition">
+                <Link to={`/userProfilePage/${profile.user_id}`} className="flex items-center w-full overflow-hidden">
+                  <img
+                    src={
+                      !profile.profile_pic || profile.profile_pic === "/default-profile.svg"
+                        ? "/default-profile.svg"
+                        : `http://localhost:8081${profile.profile_pic}`
+                    }
+                    alt="User Profile"
+                    className="w-12 h-12 rounded-full object-cover mr-3 flex-shrink-0"
+                  />
+                  <div className="flex flex-col flex-grow min-w-0">
+                    <p className="text-sm font-semibold capitalize truncate">{profile.full_name}</p>
+                    <p className="text-xs text-gray-500 truncate">@{profile.username}</p>
+                  </div>
+                </Link>
+                <div className="ml-3 flex-shrink-0">
                   <FollowButton
                     targetUserId={profile.user_id}
                     isFollowing={profile.is_following}
