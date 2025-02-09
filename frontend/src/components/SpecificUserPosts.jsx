@@ -7,8 +7,36 @@ const SpecificUserPosts = () => {
   const { user_id } = useParams();
   const [error, setError] = useState("");
   const [userPosts, setUserPosts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [hasMorePosts, setHasMorePosts] = useState(true);
+  const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    fetchSpecificUserPosts(page);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user_id, page]);
+
+  const handleScroll = () => {
+    // console.log('height: ', document.documentElement.scrollHeight);
+    // console.log("top: ", document.documentElement.scrollTop);
+    // console.log("window: ",window.innerHeight);
+    if (
+      window.innerHeight + document.documentElement.scrollTop + 1 >=
+      document.documentElement.scrollHeight
+    ) {
+      setPage((prev) => prev + 1);
+      setLoading(true);
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const fetchSpecificUserPosts = async () => {
+    if(loading && !hasMorePosts) return;
+
     const token = localStorage.getItem("authToken");
     if (!token) {
       setError("error authorizing");
@@ -17,7 +45,7 @@ const SpecificUserPosts = () => {
     }
     try {
       const response = await axios.get(
-        `http://localhost:8081/posts-of-user/${user_id}`,
+        `http://localhost:8081/posts-of-user/${user_id}?page=${page}&limit=6`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -26,7 +54,9 @@ const SpecificUserPosts = () => {
         }
       );
 
-      setUserPosts(response.data);
+      const postData = response.data;
+      setUserPosts((prev) => page === 1 ? postData.posts : [...prev, ...postData.posts]);
+      setHasMorePosts(postData.hasMore);
       console.log("users posts: ", response.data);
       //   setError("");
       //   if (onPostsFetched) {
@@ -38,10 +68,7 @@ const SpecificUserPosts = () => {
     }
   };
 
-  useEffect(() => {
-    fetchSpecificUserPosts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user_id]);
+ 
   console.log("User Posts:", userPosts);
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -68,6 +95,22 @@ const SpecificUserPosts = () => {
           No posts yet
         </p>
       )}
+
+{loading && hasMorePosts && (
+          <div className="flex justify-center mt-4">
+            <div
+              className="h-8 w-8 animate-spin rounded-full border-4 border-solid border-gray-500 border-e-transparent"
+              role="status"
+            />
+          </div>
+        )}
+
+        {/* Show message when no more posts are available */}
+        {!hasMorePosts && userPosts.length > 0 && (
+          <div className="text-center text-gray-400 mt-4 flex justify-center items-center">
+            <h1>No more posts</h1>
+          </div>
+        )}
     </div>
   );
 };

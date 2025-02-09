@@ -18,7 +18,7 @@ const PersonalProfilePage = () => {
       setError("error authorzing");
     }
     try {
-      const response = await axios.get("http://localhost:8081/user_profiles", {
+      const response = await axios.get(`http://localhost:8081/user_profiles`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",

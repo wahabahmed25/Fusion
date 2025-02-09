@@ -113,15 +113,14 @@ onclick send a post requesnt and delete all columns of that post
 
 
 whats left (MUST):
-- posts loading feature so it doesn't fetch all at once
 - real time messaging between 2 people
-- display followers/following users profiles in page (personal and public)
-
 
 addition features (optional):
-- notification system, group chat,
-- settings page, (activity log, change passwords, change email other features etc)
+- notification system,
+- settings page,(activity log, change passwords, change email other features etc)
 - tags posts tags,
+- group chat,
+- send images/video through messages
 - friend requests,
 - display followers/following users profiles in page (personal and public)
 - option for account to be private
@@ -142,3 +141,12 @@ fix:
 search bar:
 
 when inputting, looks for username, and full_name
+
+
+messages table:
+id, sender_user_id, receiver_user_id, message, created_at, is_read
+
+need:
+message page (displays all users you have messaged/messaging)
+message bar card (contains profile pic, username and onClick leads to messagingPerson overlay modal)
+messaging user component (shows the messages between you and the other, input field to send message, displays time sent, if read else delivered)

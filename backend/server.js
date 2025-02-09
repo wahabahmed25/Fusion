@@ -290,7 +290,11 @@ app.get('/search-user', authenticateToken, (req, res) => {
 //personal dash board
 app.get('/personal-posts', authenticateToken, (req, res) => {
     const userId = req.user.id;
-    //joins posts with user profile and user info
+    const page = parseInt(req.query.page) || 1; // Default to page 1
+    const limit = parseInt(req.query.limit) || 6; // Default to 10 posts per request
+    const offset = (page - 1) * limit;
+
+    // Query to fetch user posts with pagination
     const userPostsQuery = `
         SELECT 
             posts.id AS post_id, 
@@ -311,14 +315,16 @@ app.get('/personal-posts', authenticateToken, (req, res) => {
             posts.user_id = ? 
         ORDER BY 
             posts.created_at DESC
+        LIMIT ? OFFSET ?
     `;
 
-    database.query(userPostsQuery, [userId], (err, results) => {
+    database.query(userPostsQuery, [userId, limit, offset], (err, results) => {
         if (err) {
             console.error("Error fetching user posts: ", err);
             return res.status(500).json({ error: "Failed to fetch user posts" });
         }
 
+        // Format the posts
         const formattedPosts = results.map(post => ({
             post_id: post.post_id,
             media_url: post.media_url,
@@ -332,7 +338,20 @@ app.get('/personal-posts', authenticateToken, (req, res) => {
             },
         }));
 
-        return res.status(200).json(formattedPosts);
+        // Query to check if there are more posts available
+        const totalPostsQuery = `SELECT COUNT(*) AS total FROM posts WHERE user_id = ?`;
+
+        database.query(totalPostsQuery, [userId], (err, countResult) => {
+            if (err) {
+                console.error("Error counting total user posts: ", err);
+                return res.status(500).json({ error: "Failed to fetch total post count" });
+            }
+
+            const totalPosts = countResult[0].total;
+            const hasMore = offset + limit < totalPosts; // Check if more posts exist
+
+            return res.status(200).json({ posts: formattedPosts, hasMore });
+        });
     });
 });
 
@@ -341,8 +360,12 @@ app.get('/personal-posts', authenticateToken, (req, res) => {
 //public feed:
 
 app.get('/user-posts', authenticateToken, (req, res) => {
-    // Updated query: Remove the WHERE clause to fetch posts from all users
-    const allPostsQuery = `
+    const page = parseInt(req.query.page) || 1; // Default to page 1
+    const limit = parseInt(req.query.limit) || 5; // Default to 10 posts per request
+    const offset = (page - 1) * limit; // Calculate offset for pagination
+
+    // Fetch limited posts using OFFSET and LIMIT
+    const paginatedQuery = `
         SELECT 
             posts.id AS post_id, 
             posts.media_url, 
@@ -360,13 +383,17 @@ app.get('/user-posts', authenticateToken, (req, res) => {
             user_profiles ON posts.user_id = user_profiles.user_id
         ORDER BY 
             posts.created_at DESC
+        LIMIT ? OFFSET ?
     `;
 
-    database.query(allPostsQuery, (err, results) => {
+    database.query(paginatedQuery, [limit, offset], (err, results) => {
         if (err) {
             console.error("Error fetching posts: ", err);
             return res.status(500).json({ error: "Failed to fetch posts" });
         }
+
+        // If there are no posts, indicate no more posts
+        const hasMore = results.length === limit; 
 
         const formattedPosts = results.map(post => ({
             post_id: post.post_id,
@@ -381,12 +408,20 @@ app.get('/user-posts', authenticateToken, (req, res) => {
             },
         }));
 
-        return res.status(200).json(formattedPosts);
+        return res.status(200).json({
+            posts: formattedPosts,
+            hasMore, // Indicate if there are more posts to fetch
+        });
     });
 });
 
+
 app.get('/posts-of-user/:user_id', authenticateToken, (req, res) => {
     const userId = req.params.user_id;
+    const page = parseInt(req.query.page) || 1; // Default to page 1
+    const limit = parseInt(req.query.limit) || 6; // Default to 6 posts per request
+    const offset = (page - 1) * limit; // Calculate offset for pagination
+
     const specificUserPostsQuery = `
     SELECT 
         posts.id AS post_id, 
@@ -407,13 +442,19 @@ app.get('/posts-of-user/:user_id', authenticateToken, (req, res) => {
         posts.user_id = ? 
     ORDER BY 
         posts.created_at DESC
-`;
-    database.query(specificUserPostsQuery, [userId], (err, results) => {
+    LIMIT ? OFFSET ?
+    `;
+
+    database.query(specificUserPostsQuery, [userId, limit, offset], (err, results) => {
         if (err) {
-            console.error("Error fetching this users posts: ", err);
-            return res.status(500).json({ error: "Failed to fetch this users posts" });
+            console.error("Error fetching this user's posts: ", err);
+            return res.status(500).json({ error: "Failed to fetch this user's posts" });
         }
-        const formattedPost = results.map(post => ({
+
+        // Determine if there are more posts to fetch (if the number of results equals the limit)
+        const hasMore = results.length === limit;
+
+        const formattedPosts = results.map(post => ({
             post_id: post.post_id,
             media_url: post.media_url,
             description: post.description,
@@ -424,10 +465,15 @@ app.get('/posts-of-user/:user_id', authenticateToken, (req, res) => {
                 name: post.full_name,
                 profile_pic: post.profile_pic,
             },
-        }))
-        res.status(200).json(formattedPost);
-    })
-})
+        }));
+
+        return res.status(200).json({
+            posts: formattedPosts,
+            hasMore, // Indicate if there are more posts to fetch
+        });
+    });
+});
+
 
 
 app.post("/user_profiles", async (req, res) => {
@@ -790,89 +836,153 @@ app.get('/follow-counts/:user_id', (req, res) => {
 //     });
 // });
   
-app.get('/saved_posts', authenticateToken, (req, res) => {
-    const userId = req.user.id;
-    const post_id = req.query.post_id; // Get post_id from query params
-  
-    // If post_id is provided, check if the specific post is saved
-    if (post_id) {
-      const checkSavedQuery = `
-        SELECT COUNT(*) AS save_count 
-        FROM saved_posts 
-        WHERE user_id = ? AND post_id = ?
-      `;
-      const values = [userId, post_id];
-  
-      database.query(checkSavedQuery, values, (err, result) => {
-        if (err) {
-          console.error('Error checking saved post:', err);
-          return res.status(500).json({ error: 'Error checking saved post' });
-        }
-  
-        const isSaved = result[0].save_count > 0;
-        return res.json({ isSaved }); // Return { isSaved: true/false }
-      });
-    } 
-    // If no post_id, return all saved posts (existing logic)
-    else {
-      const query = `
-        SELECT 
-          p.id AS post_id,
-          p.description,
-          p.media_url,
-          u.full_name,
-          u.username,
-          up.profile_pic
-        FROM saved_posts sp
-        INNER JOIN posts p ON sp.post_id = p.id
-        INNER JOIN users u ON p.user_id = u.id
-        INNER JOIN user_profiles up ON u.id = up.user_id
-        WHERE sp.user_id = ?;
-      `;
-  
-      database.query(query, [userId], (err, result) => {
-        if (err) {
-          console.error('Error fetching saved posts', err);
-          return res.status(500).json({ error: 'Error fetching saved posts' });
-        }
-  
-        const savedPosts = result.map(post => ({
-          post_id: post.post_id,
-          description: post.description,
-          media_url: post.media_url,
-          user: {
-            full_name: post.full_name,
-            username: post.username,
-            profile_pic: post.profile_pic,
-          },
-        }));
-  
-        return res.json(savedPosts);
-      });
-    }
-  });
 // app.get('/saved_posts', authenticateToken, (req, res) => {
 //     const userId = req.user.id;
-//     // const post_id = req.query.post_id;
+//     const post_id = req.query.post_id; // Get post_id from query params
   
-//     // Query to fetch all saved posts for the authenticated user
-//     const query = `
+//     // If post_id is provided, check if the specific post is saved
+//     if (post_id) {
+//       const checkSavedQuery = `
+//         SELECT COUNT(*) AS save_count 
+//         FROM saved_posts 
+//         WHERE user_id = ? AND post_id = ?
+//       `;
+//       const values = [userId, post_id];
+  
+//       database.query(checkSavedQuery, values, (err, result) => {
+//         if (err) {
+//           console.error('Error checking saved post:', err);
+//           return res.status(500).json({ error: 'Error checking saved post' });
+//         }
+  
+//         const isSaved = result[0].save_count > 0;
+//         return res.json({ isSaved }); // Return { isSaved: true/false }
+//       });
+//     } 
+//     // If no post_id, return all saved posts (existing logic)
+//     else {
+//       const query = `
 //         SELECT 
-//             p.id AS post_id,
-//             p.description,
-//             p.media_url,
-//             u.full_name,
-//             u.username,
-//             up.profile_pic
-//         FROM 
-//             saved_posts sp
+//           p.id AS post_id,
+//           p.description,
+//           p.media_url,
+//           u.full_name,
+//           u.username,
+//           up.profile_pic
+//         FROM saved_posts sp
 //         INNER JOIN posts p ON sp.post_id = p.id
 //         INNER JOIN users u ON p.user_id = u.id
 //         INNER JOIN user_profiles up ON u.id = up.user_id
-//         WHERE 
-//             sp.user_id = ?;
-//     `;
+//         WHERE sp.user_id = ?;
+//       `;
+  
+//       database.query(query, [userId], (err, result) => {
+//         if (err) {
+//           console.error('Error fetching saved posts', err);
+//           return res.status(500).json({ error: 'Error fetching saved posts' });
+//         }
+  
+//         const savedPosts = result.map(post => ({
+//           post_id: post.post_id,
+//           description: post.description,
+//           media_url: post.media_url,
+//           user: {
+//             full_name: post.full_name,
+//             username: post.username,
+//             profile_pic: post.profile_pic,
+//           },
+//         }));
+  
+//         return res.json(savedPosts);
+//       });
+//     }
+//   });
 
+
+
+  app.get('/saved_posts', authenticateToken, (req, res) => {
+    const userId = req.user.id;
+    const post_id = req.query.post_id; 
+    const page = parseInt(req.query.page) || 1; // Default to page 1
+    const limit = parseInt(req.query.limit) || 6; // Default to 10 posts per request
+    const offset = (page - 1) * limit; // Calculate offset for pagination
+
+    // If post_id is provided, check if the specific post is saved
+    if (post_id) {
+        const checkSavedQuery = `
+            SELECT COUNT(*) AS save_count 
+            FROM saved_posts 
+            WHERE user_id = ? AND post_id = ?
+        `;
+        const values = [userId, post_id];
+
+        database.query(checkSavedQuery, values, (err, result) => {
+            if (err) {
+                console.error('Error checking saved post:', err);
+                return res.status(500).json({ error: 'Error checking saved post' });
+            }
+
+            const isSaved = result[0].save_count > 0;
+            return res.json({ isSaved }); // Return { isSaved: true/false }
+        });
+    } 
+    // If no post_id, return paginated saved posts
+    else {
+        const query = `
+            SELECT 
+                p.id AS post_id,
+                p.description,
+                p.media_url,
+                u.full_name,
+                u.username,
+                u.id,
+                up.profile_pic
+            FROM saved_posts sp
+            INNER JOIN posts p ON sp.post_id = p.id
+            INNER JOIN users u ON p.user_id = u.id
+            INNER JOIN user_profiles up ON u.id = up.user_id
+            WHERE sp.user_id = ?
+            ORDER BY sp.saved_at DESC
+            LIMIT ? OFFSET ?
+        `;
+
+        database.query(query, [userId, limit, offset], (err, result) => {
+            if (err) {
+                console.error('Error fetching saved posts', err);
+                return res.status(500).json({ error: 'Error fetching saved posts' });
+            }
+
+            const savedPosts = result.map(post => ({
+                post_id: post.post_id,
+                description: post.description,
+                media_url: post.media_url,
+                user: {
+                    id: post.id,
+                    full_name: post.full_name,
+                    username: post.username,
+                    profile_pic: post.profile_pic,
+                },
+            }));
+
+            // Check if there are more posts left to fetch
+            const hasMoreQuery = `
+                SELECT COUNT(*) AS total FROM saved_posts WHERE user_id = ?
+            `;
+
+            database.query(hasMoreQuery, [userId], (err, countResult) => {
+                if (err) {
+                    console.error('Error checking for more saved posts', err);
+                    return res.status(500).json({ error: 'Error checking for more saved posts' });
+                }
+
+                const totalSavedPosts = countResult[0].total;
+                const hasMore = offset + limit < totalSavedPosts;
+
+                return res.json({ posts: savedPosts, hasMore} );
+            });
+        });
+    }
+});
 
 
 //like count

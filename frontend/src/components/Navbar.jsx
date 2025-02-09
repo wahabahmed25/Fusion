@@ -8,7 +8,7 @@ const Navbar = () => {
     setShowModal((prev => !prev));
   }
   return (
-    <div className="bg-gray-700 text-white shadow-md fixed h-screen w-auto z-50 flex flex-col">
+    <div className="bg-gray-900 text-white shadow-md fixed h-screen w-auto z-50 flex flex-col">
       <nav className="flex flex-col items-start px-6 py-8 space-y-6">
         <div className="w-full">
           <Link to="/home" className="text-white text-4xl font-extrabold tracking-wide p-20 hover:text-pink-500 transition duration-300">FUSION</Link>
