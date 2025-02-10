@@ -4,7 +4,6 @@ const http = require("http");
 require('dotenv').config();
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
-const { Server } = require("socket.io");
 const JWT_SECRET = process.env.JWT_SECRET_KEY;
 const multer = require('multer');
 const { error } = require('console');
@@ -12,11 +11,10 @@ const upload = multer({ dest: 'uploads/' })
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
 const fs = require('fs');
 const path = require('path');
-
 app.use(express.json());
+const { Server } = require("socket.io");
 
 app.use(cors({
     origin: 'http://localhost:5173', // Frontend URL
@@ -27,16 +25,25 @@ app.use(cors({
 
 app.use('/uploads', express.static('uploads'));
 app.use(express.static(path.join(__dirname, "public"))); 
-//socket.io
-io.on("connection", (socket) => {
-    console.log("a user connected");
+//socket.io\
+const io = new Server(server, {
+    cors: {
+        origin: "http://localhost:5173",
+        methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    }
+});
 
-    socket.on("message", (data) => {
-        console.log(data);
-        io.emit("message", data); //broadcasts message to all clients
+//checks if someone connected to the server
+io.on("connection", (socket) => {
+    console.log("a user connected", socket.id);
+
+    socket.on('join_room', (data) => {
+        socket.join(data);
+        console.log("user with id: ", socket.id, "joined the room.", data)
     })
-    socket.on("disconnect", () => {
-        console.log("user disconnected");
+
+    socket.on('disconnect', () => {
+        console.log('user disconnected', socket.io);
     })
 })
 
@@ -44,10 +51,11 @@ io.on("connection", (socket) => {
 app.use('/public', express.static("public"));
 
 
-// After deleting the post
 
 
-
+// server.listen(3001, () => {
+//     console.log("server listening on port 8080")
+// })
 const database = mysql.createConnection({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -1276,6 +1284,6 @@ app.listen(8081, () => {
     console.log("listening");
 });
 
-server.listen(8080, () => {
-    console.log("server listening on port 8080")
+server.listen(3001, () => {
+    console.log("server listening on port 3001")
 })

@@ -150,3 +150,8 @@ need:
 message page (displays all users you have messaged/messaging)
 message bar card (contains profile pic, username and onClick leads to messagingPerson overlay modal)
 messaging user component (shows the messages between you and the other, input field to send message, displays time sent, if read else delivered)
+
+
+socket.io: room, user, message handling (sending and recieving)
+
+
