@@ -35,17 +35,26 @@ const io = new Server(server, {
 
 //checks if someone connected to the server
 io.on("connection", (socket) => {
-    console.log("a user connected", socket.id);
+    console.log("A user connected:", socket.id);
 
-    socket.on('join_room', (data) => {
-        socket.join(data);
-        console.log("user with id: ", socket.id, "joined the room.", data)
-    })
+    socket.on("join_room", (room) => {
+        socket.join(room);
+        console.log(`User with ID: ${socket.id} joined room: ${room}`);
+    });
 
-    socket.on('disconnect', () => {
-        console.log('user disconnected', socket.io);
-    })
-})
+    socket.on("send_message", (data) => {
+        const { receiver_id, message, sender_user_id, room } = data;
+        console.log(`Message received: ${message} from ${sender_user_id} to ${receiver_id} in room ${room}`);
+
+        // Send the message to everyone in the room (except the sender)
+        socket.to(data.room).emit("receive_message", data.messageData);
+    });
+
+    socket.on("disconnect", () => {
+        console.log("User disconnected:", socket.id);
+    });
+});
+
 
 
 app.use('/public', express.static("public"));
@@ -79,6 +88,10 @@ database.connect((err) => {
         });
     }
 });;
+
+
+
+
 
 app.get('/users', (req, res) => {
     const sql = "SELECT * FROM users";
@@ -185,6 +198,108 @@ const authenticateToken = (req, res, next) => {
 
 }
 
+
+app.post('/store-messages', authenticateToken, (req, res) => {
+    const userId = req.user.id; // Sender's ID from the token
+    const { receiver_id, message } = req.body;
+
+    if (!receiver_id || !message) {
+        return res.status(400).json({ error: "Receiver ID and message are required" });
+    }
+
+    // Create a consistent room_id based on sender and receiver IDs
+    const room_id = userId < receiver_id 
+        ? `${userId}-${receiver_id}` 
+        : `${receiver_id}-${userId}`;
+
+    const query = `
+        INSERT INTO messages (sender_user_id, receiver_user_id, room_id, message, created_at, is_read)
+        VALUES (?, ?, ?, ?, NOW(), false)
+    `;
+
+    database.query(query, [userId, receiver_id, room_id, message], (err, result) => {
+        if (err) {
+            console.error("Error storing message:", err);
+            return res.status(500).json({ error: "Failed to store message" });
+        }
+        res.status(201).json({ message: "Message stored successfully", messageId: result.insertId });
+    });
+});
+
+
+app.get('/messages/:room', authenticateToken, (req, res) => {
+    const userId = req.user.id;
+    const { room } = req.params;
+
+    // Ensure room_id format follows "smallerID-biggerID"
+    const [user1, user2] = room.split('-').map(Number);
+    if (!user1 || !user2) {
+        return res.status(400).json({ error: "Invalid room format" });
+    }
+
+    console.log("Room received:", room);
+  
+    // Fetch messages where either user is the sender or receiver
+    const query = `
+        SELECT id, sender_user_id, receiver_user_id, message, created_at 
+        FROM messages 
+        WHERE (sender_user_id = ? AND receiver_user_id = ?) 
+           OR (sender_user_id = ? AND receiver_user_id = ?)
+        ORDER BY created_at ASC
+    `;
+
+    database.query(query, [user1, user2, user2, user1], (err, results) => {
+        if (err) {
+            console.error("Database error:", err);
+            return res.status(500).json({ error: "Error retrieving messages" });
+        }
+        res.json(results);
+    });
+});
+
+
+app.get('/messaged-users', authenticateToken, (req, res) => {
+    const userId = req.user.id;
+
+    const getMessagedUserQuery = `
+        SELECT DISTINCT 
+            u.id AS user_id,
+            u.full_name,
+            u.username,
+            up.profile_pic
+        FROM messages m
+        JOIN users u 
+            ON u.id = CASE 
+                         WHEN m.sender_user_id = ? THEN receiver_user_id
+                         WHEN m.receiver_user_id = ? THEN m.sender_user_id
+                      END
+        LEFT JOIN user_profiles up 
+            ON u.id = up.user_id
+        WHERE m.sender_user_id = ? OR m.receiver_user_id = ?;
+    `;
+
+    database.query(getMessagedUserQuery, [userId, userId, userId, userId], (err, results) => {
+        if (err) {
+            console.error("Error fetching messaged users", err);
+            return res.status(500).json({ error: "Internal Server Error" });
+        }
+
+        // Transform results to match desired structure
+        const formattedResults = results.map(user => ({
+            user: {
+                user_id: user.user_id,
+                full_name: user.full_name,
+                username: user.username,
+                profile_pic: user.profile_pic
+            }
+        }));
+
+        res.json(formattedResults);
+    });
+});
+
+
+
 app.get('/user_profiles', authenticateToken, (req, res) => {
     const userId = req.user.id; 
     const sql = `
@@ -220,23 +335,43 @@ app.get('/isFollowing/:user_id', authenticateToken, (req, res) => {
     const followerUserId = req.user.id; // The user_id of the currently authenticated user
 
     const sql = `
-        SELECT EXISTS(
-            SELECT 1 
-            FROM followers 
-            WHERE follower_user_id = ? AND following_user_id = ?
-        ) AS is_following;
+        SELECT 
+            EXISTS(
+                SELECT 1 
+                FROM followers 
+                WHERE follower_user_id = ? AND following_user_id = ?
+            ) AS is_following,
+            u.username, 
+            u.full_name, 
+            up.profile_pic,
+            up.user_id
+        FROM users u
+        LEFT JOIN user_profiles up ON u.id = up.user_id
+        WHERE u.id = ?;
     `;
 
     // Pass followerUserId and followeeUserId as parameters
-database.query(sql, [followerUserId, followeeUserId], (err, data) => {
-    if (err) {
-        console.error("Error checking follow status:", err);
-        return res.status(500).json({ message: "Internal server error" });
-    }
-    console.log("Follow status:", data[0]); // Log the result
-    return res.json(data[0]); // Return the result
+    database.query(sql, [followerUserId, followeeUserId, followeeUserId], (err, data) => {
+        if (err) {
+            console.error("Error checking follow status:", err);
+            return res.status(500).json({ message: "Internal server error" });
+        }
+        if (data.length === 0) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        console.log("Follow status and user info:", data[0]); // Log the result
+        return res.json({ 
+            is_following: data[0].is_following,
+            user: {
+                user_id: data[0].user_id,
+                username: data[0].username,
+                full_name: data[0].full_name,
+                profile_pic: data[0].profile_pic
+            }
+        });
     });
 });
+
 
 app.get('/user_profiles/:user_id',authenticateToken,  (req, res) => {
     const userId = req.params.user_id;
@@ -1237,13 +1372,19 @@ app.post('/signup', (req, res) => {
 //user login
 app.post('/login', (req, res) => {
     console.log(req.body);
-    const {username, password} = req.body;
+    const { username, password } = req.body;
 
-    if(!username || ! password){
+    if (!username || !password) {
         return res.status(400).json({ error: "All fields are required" });
     }
 
-    const sql = "SELECT * FROM users WHERE username = ? AND password = ?";
+    const sql = `
+        SELECT u.id, u.username, u.full_name, up.profile_pic
+        FROM users u
+        LEFT JOIN user_profiles up ON u.id = up.user_id
+        WHERE u.username = ? AND u.password = ?
+    `;
+
     const values = [username, password];
 
     database.query(sql, values, (err, result) => {
@@ -1251,22 +1392,32 @@ app.post('/login', (req, res) => {
             console.error("Error checking credentials:", err);
             return res.status(500).json({ success: false, message: "Server error" });
         }
-        if(result.length > 0){
+
+        if (result.length > 0) {
             const user = result[0];
-            //generate token
+            // Generate token
             const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '2h' });
 
-            return res.json({ success: true, token, message: "Login Successful" });
-        }
-        else{
+            // Construct the `currentUser` object
+            const currentUser = {
+                id: user.id,
+                username: user.username,
+                full_name: user.full_name,
+                profile_pic: user.profile_pic
+            };
+
+            return res.json({
+                success: true,
+                token,
+                message: "Login Successful",
+                user: currentUser // Send user details in `user` key
+            });
+        } else {
             return res.status(401).json({ success: false, message: "Invalid username or password" });
-
         }
-       
     });
+});
 
-
-})
 
 
 app.all('*', (req, res) => {

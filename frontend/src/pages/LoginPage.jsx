@@ -40,6 +40,7 @@ const LoginPage = () => {
           console.log("succesfully logged in, token: ", data.token);
 
           localStorage.setItem("authToken", data.token);
+          localStorage.setItem('currentUser', JSON.stringify(data.user));
           navigate("/home");
         } else {
           setError((prev) => ({

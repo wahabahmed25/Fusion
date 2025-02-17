@@ -1,3 +1,4 @@
+// import ShowChat from "../components/ShowChat";
 import SpecificUserProfile from "../components/SpecificUserProfile";
 import SpecificUserPosts from "../components/SpecificUserPosts";
 import { useParams } from "react-router";
@@ -7,19 +8,48 @@ import FollowCount from "../components/FollowCount";
 import FollowButton from "../components/FollowButton";
 import axios from "axios";
 import { useState, useEffect } from "react";
-
+import PropTypes from "prop-types";
+// import io from "socket.io-client";
+import MessageButton from "../components/MessageButton";
+// const socket = io.connect("http://localhost:3001");
+// console.log(socket)
 const UserProfilePage = () => {
   const { user_id } = useParams();
+  // const targetUserId = Number(user_id);
   const userId = Number(user_id);
+
   const [isFollowing, setIsFollowing] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  // const [chat, setChat] = useState(false);
+  // const [room, setRoom] = useState(null);
+  // const [currentUser, setCurrentUser] = useState({});
+
+  
+
+  // useEffect(() => {
+  //   const storedUser = localStorage.getItem('currentUser');
+  //   if(storedUser){
+  //     const parsedUser = JSON.parse(storedUser);
+  //     setCurrentUser(parsedUser);
+  //     console.log("Current user loadededededefefefregtg:", parsedUser);
+
+  //     if (parsedUser && userId) {
+  //       const sortedIds = [parsedUser.id, userId].sort((a, b) => a - b); // Use user ID, not object
+  //       setRoom(`chat_${sortedIds[0]}_${sortedIds[1]}`);
+  //     }
+
+  //   } else{
+  //     console.warn("No current user found in localStorage.");
+  //   }
+  //   // console.log("current user bla badeifebfueibfe: ", currentUser);
+    
+  // }, [userId]);
 
   const checkFollowingStatus = async () => {
     const token = localStorage.getItem("authToken");
     if (!token) {
-      console.error("error authorizing");
-      setError("error authorizing");
+      setError("Error authorizing");
       setLoading(false);
       return;
     }
@@ -32,10 +62,13 @@ const UserProfilePage = () => {
           },
         }
       );
+
       setIsFollowing(response.data.is_following);
+      // setCurrentUser(response.data.user);
+      console.log('current data: ', response.data);
     } catch (err) {
-      console.error("error checking following status", err);
-      setError("error checking following status");
+      console.log(err);
+      setError("Error checking following status");
     } finally {
       setLoading(false);
     }
@@ -44,7 +77,12 @@ const UserProfilePage = () => {
   useEffect(() => {
     checkFollowingStatus();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user_id]);
+  }, [userId]);
+
+
+  // console.log("Current User:", userId);
+  // console.log("Socket:", socket);
+  // console.log("Room:", room);
 
   return (
     <div className="bg-gray-800 min-h-screen p-4">
@@ -76,15 +114,17 @@ const UserProfilePage = () => {
                     isFollowing={isFollowing}
                     className="bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded-lg font-medium transition-colors"
                   />
-                  <button className="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                    Message
-                  </button>
+
+                  <MessageButton />
+                  
                 </>
               )}
             </div>
           </div>
         </div>
-        
+
+        {/* {chat && <ShowChat socket={socket} user={currentUser} room={room} />} */}
+
         <h1 className="text-white text-2xl font-bold text-center mt-8 mb-6">
           Posts
         </h1>
@@ -94,4 +134,10 @@ const UserProfilePage = () => {
   );
 };
 
+UserProfilePage.propTypes = {
+  socket: PropTypes.object,
+  currentUser: PropTypes.shape({
+    userId: PropTypes.number,
+  }),
+};
 export default UserProfilePage;

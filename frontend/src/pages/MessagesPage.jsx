@@ -3,7 +3,8 @@
 import io from "socket.io-client";
 const socket = io.connect("http://localhost:3001");
 import axios from "axios";
-
+import backIcon from "../icons/backArrow-icon.svg";
+import { Link } from "react-router-dom";
 // import Navbar from "../components/Navbar"
 import MessageBar from "../components/MessageBar";
 import { useState, useEffect } from "react";
@@ -45,7 +46,7 @@ const MessagesPage = () => {
       console.log("all users you have messaged: ", data);
     } catch (err) {
       console.error("error getting messaged users", err);
-      setError("error getting message users");
+      setError("error getting messaged users");
     }
   };
 
@@ -61,6 +62,14 @@ const MessagesPage = () => {
         <div className="flex justify-center text-white">
           <p>Messages</p>
         </div>
+        <Link to="/home" className="flex items-center gap-2">
+            <img
+              src={backIcon}
+              alt="home"
+              className="w-7 h-7 invert opacity-75 hover:opacity-100 transition-opacity"
+            />
+            <span className="text-white text-lg font-medium">Home</span>
+          </Link>
         <div>
           {messagedUser.length > 0 ? (
             messagedUser.map((user) => (
@@ -78,11 +87,11 @@ const MessagesPage = () => {
             </p>
           )}
           {/* test */}
-          <MessageBar
+          {/* <MessageBar
             socket={socket}
             user={12}
             room={123} //or user.id?
-          />
+          /> */}
 
           {/* This will get all users you have messaged before */}
         </div>

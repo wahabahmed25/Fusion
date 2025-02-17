@@ -80,7 +80,7 @@ const MessageBar = ({ socket, user, room }) => {
 
 MessageBar.propTypes = {
   socket: PropTypes.object.isRequired,
-  user: PropTypes.object.isRequired,
+  user: PropTypes.object,
   room: PropTypes.string.isRequired,
 };
 
