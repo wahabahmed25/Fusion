@@ -113,7 +113,10 @@ onclick send a post requesnt and delete all columns of that post
 
 
 whats left (MUST):
-- real time messaging between 2 people
+- in messages page, display messagebars and properly work
+- style message bar better
+- optamize message loading
+
 
 addition features (optional):
 - notification system,

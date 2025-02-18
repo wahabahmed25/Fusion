@@ -2,7 +2,13 @@ import PropTypes from "prop-types";
 import axios from "axios";
 import { useState, useEffect, useRef } from "react";
 
-const ShowChat = ({ socket, user, room, messages: initialMessages, handleClose }) => {
+const ShowChat = ({
+  socket,
+  user,
+  room,
+  messages: initialMessages,
+  handleClose,
+}) => {
   const [messageValue, setMessageValue] = useState("");
   const [error, setError] = useState("");
   const [messages, setMessages] = useState(initialMessages);
@@ -51,7 +57,9 @@ const ShowChat = ({ socket, user, room, messages: initialMessages, handleClose }
 
     console.log("Message value before sending:", messageValue);
 
-    const receiverIdStr = room.replace(user.id + "-", "").replace("-" + user.id, "");
+    const receiverIdStr = room
+      .replace(user.id + "-", "")
+      .replace("-" + user.id, "");
     const receiverId = Number(receiverIdStr);
     const messageData = {
       sender_user_id: user.id,
@@ -81,55 +89,65 @@ const ShowChat = ({ socket, user, room, messages: initialMessages, handleClose }
       setMessageValue("");
     } catch (err) {
       console.error("error storing messages", err);
-      setError(err.response ? err.response.data.error : "Error storing messages");
+      setError(
+        err.response ? err.response.data.error : "Error storing messages"
+      );
     }
   };
 
   return (
-    <div className="fixed bottom-0 z-30 right-4 w-80 md:w-96 bg-white shadow-lg rounded-t-lg border border-gray-300">
-      <div className="bg-blue-600 text-white py-2 px-4 font-bold rounded-t-lg flex justify-between items-center">
-        <span>Chat</span>
-        <button onClick={handleClose} className="text-white text-lg font-bold">
-          X
-        </button>
-      </div>
+    <div className="fixed inset-0 flex items-center justify-center z-30 bg-black bg-opacity-50">
+      <div className="w-80 md:w-96 bg-white shadow-lg rounded-lg border border-gray-300">
+        <div className="bg-blue-600 text-white py-2 px-4 font-bold rounded-t-lg flex justify-between items-center">
+          <span>Chat</span>
+          <button
+            onClick={handleClose}
+            className="text-white text-lg font-bold"
+          >
+            X
+          </button>
+        </div>
 
-      <div className="h-96 overflow-y-auto p-4 flex flex-col space-y-2">
-        {messages.length > 0 ? (
-          messages.map((msg, index) => (
-            <div
-              key={index}
-              className={`p-2 rounded-lg max-w-xs ${
-                msg.sender_user_id === user.id
-                  ? "self-end bg-blue-500 text-white"
-                  : "self-start bg-gray-200 text-black"
-              }`}
-            >
-              {msg.message}
-            </div>
-          ))
-        ) : (
-          <p className="text-gray-500 text-center">No messages yet...</p>
-        )}
-        <div ref={messagesEndRef} />
-        {error && <p className="text-red-500">{error}</p>}
-      </div>
+        <div className="h-96 overflow-y-auto p-4 flex flex-col space-y-2">
+          {messages.length > 0 ? (
+            messages.map((msg, index) => (
+              <div
+                key={index}
+                className={`p-2 rounded-lg max-w-xs ${
+                  msg.sender_user_id === user.id
+                    ? "self-end bg-blue-500 text-white"
+                    : "self-start bg-gray-200 text-black"
+                }`}
+              >
+                {msg.message}
+              </div>
+            ))
+          ) : (
+            <p className="text-gray-500 text-center">No messages yet...</p>
+          )}
+          <div ref={messagesEndRef} />
+          {error && <p className="text-red-500">{error}</p>}
+        </div>
 
-      <form onSubmit={handleSendMessage} className="p-2 flex border-t border-gray-300">
-        <input
-          onChange={(e) => setMessageValue(e.target.value)}
-          value={messageValue}
-          type="text"
-          className="flex-1 text-black p-2 border border-gray-300 rounded-l-lg focus:outline-none"
-          placeholder="Type a message..."
-        />
-        <button
-          type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded-r-lg hover:bg-blue-600"
+        <form
+          onSubmit={handleSendMessage}
+          className="p-2 flex border-t border-gray-300"
         >
-          Send
-        </button>
-      </form>
+          <input
+            onChange={(e) => setMessageValue(e.target.value)}
+            value={messageValue}
+            type="text"
+            className="flex-1 text-black p-2 border border-gray-300 rounded-l-lg focus:outline-none"
+            placeholder="Type a message..."
+          />
+          <button
+            type="submit"
+            className="bg-blue-500 text-white px-4 py-2 rounded-r-lg hover:bg-blue-600"
+          >
+            Send
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

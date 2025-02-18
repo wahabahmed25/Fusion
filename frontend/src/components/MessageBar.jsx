@@ -1,87 +1,75 @@
 import PropTypes from "prop-types";
-import { useState} from "react";
-import ShowChat from "./ShowChat";
-import axios from "axios";
-const MessageBar = ({ socket, user, room }) => {
-  const [openChat, setOpenChat] = useState(false);
-  // const [error, setError] = useState('');
-  // const [loadMessages, setLoadMessages] = useState([])
-  const [messages, setMessages] = useState([]);
-  const [error, setError] = useState("");
-  // const handleOpenChat = () => {
-  //   setOpenChat((prev) => !prev);
+import { useState, useEffect } from "react";
+// import ShowChat from "./ShowChat";
+// import axios from "axios";
+import io from "socket.io-client";
 
-  // }
+import MessageButton from "./MessageButton";
+const MessageBar = ({ user }) => {
+  const [socket] = useState(() => io("http://localhost:3001"));
+  const [room, setRoom] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
 
-  const fetchMessages = async () => {
-    setOpenChat((prev) => !prev);
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      setError("error authorizing");
-      console.error("error authorizing");
-      return;
+  useEffect(() => {
+    const storedUser = localStorage.getItem("currentUser");
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      setCurrentUser(parsedUser);
+    } else {
+      console.warn("No current user found in localStorage.");
     }
+  }, []);
 
-    try {
-      const response = await axios.get(
-        `http://localhost:8081/messages/${room}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      setMessages(response.data);
-    } catch (err) {
-      console.error("error fetching messages", err);
-      setError("error fetching messages");
+  useEffect(() => {
+    if (currentUser && user?.user_id) {
+      const sortedIds = [currentUser.id, user.user_id].sort((a, b) => a - b);
+      setRoom(`${sortedIds[0]}-${sortedIds[1]}`);
     }
-  };
+  }, [currentUser, user?.user_id]);
 
-
+  console.log("MessageBar user prop:", user);
+  console.log("Current User:", currentUser);
+  console.log("Room:", room);
+  console.log("Socket:", socket);
 
   return (
-    <div className="text-white flex justify-center mt-10">
-      {error && (<p className="text-red-500">{error}</p>)}
-      {user && (
-        <>
-          <button onClick={fetchMessages} className="flex items-center">
-            <img
-              src={
-                user.profile_pic
-                  ? `http://localhost:8081${user.profile_pic}`
-                  : "http://localhost:8081/default-profile.svg"
-              }
-              alt="Profile"
-              className="w-10 h-10 rounded-full mr-3"
-            />
-            <div>
-              <p className="text-sm font-bold lowercase">
-                @{user.username || "Unknown"}
-              </p>
-            </div>
-          </button>
-
-          {/* ShowChat should only render when openChat is true */}
-          {openChat && (
-            <ShowChat
-              socket={socket}
-              user={user}
-              room={room}
-              messages = {messages}
-            />
-          )}
-        </>
-      )}
+    <div className="max-w-md mx-auto my-4">
+      <div className="flex items-center bg-gray-300 hover:bg-gray-400 p-4 rounded-lg shadow-md">
+        <img
+          src={
+            user.profile_pic
+              ? `http://localhost:8081${user.profile_pic}`
+              : "http://localhost:8081/default-profile.svg"
+          }
+          alt="Profile"
+          className="w-12 h-12 rounded-full mr-4"
+        />
+        <div className="flex-1">
+          <p className="text-lg font-semibold text-gray-900">
+            {user.full_name || "Unknown"}
+          </p>
+          <p className="text-sm text-gray-700">
+            @{user.username || "unknown"}
+          </p>
+        </div>
+        {/* Render MessageButton only if currentUser and room are available */}
+        {currentUser && currentUser.id && room && (
+          <MessageButton
+            user_id={currentUser}
+            room={room}
+            socket={socket}
+          />
+        )}
+      </div>
     </div>
   );
 };
 
 MessageBar.propTypes = {
-  socket: PropTypes.object.isRequired,
   user: PropTypes.object,
-  room: PropTypes.string.isRequired,
+  // socket: PropTypes.object.isRequired,
+  // // user_id: PropTypes.number.isRequired,
+  // room: PropTypes.string,
 };
 
 export default MessageBar;

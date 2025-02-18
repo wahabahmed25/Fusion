@@ -9,9 +9,9 @@ import FollowButton from "../components/FollowButton";
 import axios from "axios";
 import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-// import io from "socket.io-client";
+import io from "socket.io-client";
 import MessageButton from "../components/MessageButton";
-// const socket = io.connect("http://localhost:3001");
+const socket = io.connect("http://localhost:3001");
 // console.log(socket)
 const UserProfilePage = () => {
   const { user_id } = useParams();
@@ -22,29 +22,23 @@ const UserProfilePage = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   // const [chat, setChat] = useState(false);
-  // const [room, setRoom] = useState(null);
-  // const [currentUser, setCurrentUser] = useState({});
+  const [room, setRoom] = useState(null);
+  const [currentUser, setCurrentUser] = useState({});
 
   
 
-  // useEffect(() => {
-  //   const storedUser = localStorage.getItem('currentUser');
-  //   if(storedUser){
-  //     const parsedUser = JSON.parse(storedUser);
-  //     setCurrentUser(parsedUser);
-  //     console.log("Current user loadededededefefefregtg:", parsedUser);
+  useEffect(() => {
+    const storedUser = localStorage.getItem("currentUser");
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      setCurrentUser(parsedUser);
 
-  //     if (parsedUser && userId) {
-  //       const sortedIds = [parsedUser.id, userId].sort((a, b) => a - b); // Use user ID, not object
-  //       setRoom(`chat_${sortedIds[0]}_${sortedIds[1]}`);
-  //     }
-
-  //   } else{
-  //     console.warn("No current user found in localStorage.");
-  //   }
-  //   // console.log("current user bla badeifebfueibfe: ", currentUser);
-    
-  // }, [userId]);
+      if (parsedUser && userId) {
+        const sortedIds = [parsedUser.id, userId].sort((a, b) => a - b);
+        setRoom(`${sortedIds[0]}-${sortedIds[1]}`);
+      }
+    }
+  }, [userId]);
 
   const checkFollowingStatus = async () => {
     const token = localStorage.getItem("authToken");
@@ -80,10 +74,7 @@ const UserProfilePage = () => {
   }, [userId]);
 
 
-  // console.log("Current User:", userId);
-  // console.log("Socket:", socket);
-  // console.log("Room:", room);
-
+ 
   return (
     <div className="bg-gray-800 min-h-screen p-4">
       {error && <p className="text-red-500">{error}</p>}
@@ -115,7 +106,11 @@ const UserProfilePage = () => {
                     className="bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded-lg font-medium transition-colors"
                   />
 
-                  <MessageButton />
+                  <MessageButton 
+                    user_id = {currentUser}
+                    socket = {socket}
+                    room = {room}
+                    />
                   
                 </>
               )}

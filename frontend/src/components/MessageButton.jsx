@@ -1,37 +1,24 @@
 import ShowChat from "./ShowChat";
 import { useState, useEffect } from "react";
-import { useParams } from "react-router";
-import io from "socket.io-client";
+// import { useParams } from "react-router";
+// import io from "socket.io-client";
 import axios from "axios";
+import PropTypes from "prop-types";
+
 // const socket = io.connect("http://localhost:3001");
 
-const MessageButton = () => {
+const MessageButton = ({user_id, room, socket}) => {
 
-  const { user_id } = useParams();
-  const userId = Number(user_id);
-  const [socket] = useState(() => io("http://localhost:3001"));
+//   const { user_id } = useParams();
+//   const userId = Number(user_id);
+//   const [socket] = useState(() => io("http://localhost:3001"));
   const [chat, setChat] = useState(false);
-  const [room, setRoom] = useState(null);
-  const [currentUser, setCurrentUser] = useState({});
+//   const [room, setRoom] = useState(null);
+//   const [currentUser, setCurrentUser] = useState({});
   const [messages, setMessages] = useState([]);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem("currentUser");
-    if (storedUser) {
-      const parsedUser = JSON.parse(storedUser);
-      setCurrentUser(parsedUser);
-      console.log("Current user loaded: ", parsedUser);
 
-      if (parsedUser && userId) {
-        const sortedIds = [parsedUser.id, userId].sort((a, b) => a - b); // Use user ID, not object
-        setRoom(`${sortedIds[0]}-${sortedIds[1]}`);
-      }
-    } else {
-      console.warn("No current user found in localStorage.");
-    }
-    // console.log("current user bla badeifebfueibfe: ", currentUser);
-  }, [userId]);
 
 
 useEffect(() => {
@@ -84,9 +71,7 @@ useEffect(() => {
     setChat(false);
   }
 
-  console.log("Current User:", userId);
-  console.log("Socket:", socket);
-  console.log("Room:", room);
+ 
 
   return (
     <div>
@@ -103,7 +88,7 @@ useEffect(() => {
         <div>
           <ShowChat
             socket={socket}
-            user={currentUser}
+            user={user_id}
             room={room}
             messages={messages}
             handleClose={handleClose}
@@ -113,5 +98,11 @@ useEffect(() => {
     </div>
   );
 };
+
+MessageButton.propTypes = {
+    socket: PropTypes.object.isRequired,
+    user_id: PropTypes.object.isRequired,
+    room: PropTypes.string,
+  };
 
 export default MessageButton;

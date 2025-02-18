@@ -1,31 +1,15 @@
 //the page shows all the people you have messaged
 // import Test from "../components/Test"
-import io from "socket.io-client";
-const socket = io.connect("http://localhost:3001");
 import axios from "axios";
 import backIcon from "../icons/backArrow-icon.svg";
 import { Link } from "react-router-dom";
-// import Navbar from "../components/Navbar"
+import Navbar from "../components/Navbar"
 import MessageBar from "../components/MessageBar";
 import { useState, useEffect } from "react";
 const MessagesPage = () => {
   const [messagedUser, setMessagedUser] = useState([]);
   const [error, setError] = useState("");
-  // const [user, setUser] = useState("");
-  //   const [room, setRoom] = useState("");
 
-  //   const joinRoom = () => {
-  //     if (username !== "" && room !== "") {
-  //       socket.emit("join_room", room);
-  //     }
-  //   };
-
-  //   const handleUsernameChange = (e) => {
-  //     setUsername(e.target.value);
-  //   };
-  //   const handleRoomChange = (e) => {
-  //     setRoom(e.target.value);
-  //   };
 
   const fetchMessagedUsers = async () => {
     const token = localStorage.getItem("authToken");
@@ -42,8 +26,10 @@ const MessagesPage = () => {
         },
       });
       const data = response.data;
-      setMessagedUser(data);
+      // setUserId(response.data.user.user_id)
+      setMessagedUser(response.data);
       console.log("all users you have messaged: ", data);
+      
     } catch (err) {
       console.error("error getting messaged users", err);
       setError("error getting messaged users");
@@ -55,10 +41,10 @@ const MessagesPage = () => {
   }, []);
 
   return (
-    <div className="bg-gray-900 h-screen">
+    <div className="bg-gray-900 min-h-screen flex flex-col">
       {error && <p className="text-red-500">{error}</p>}
       <div className="">
-        {/* <Navbar /> */}
+        <Navbar />
         <div className="flex justify-center text-white">
           <p>Messages</p>
         </div>
@@ -72,13 +58,14 @@ const MessagesPage = () => {
           </Link>
         <div>
           {messagedUser.length > 0 ? (
-            messagedUser.map((user) => (
+            messagedUser.map(({ user }) => (
               <div key={user.user_id}>
                 <MessageBar
-                  socket={socket}
-                  user={user.user}
-                  room={user.room} //or user.id?
+                  
+                  user={user}
+        
                 />
+                
               </div>
             ))
           ) : (
